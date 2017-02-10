@@ -50,7 +50,12 @@ namespace dotnet_frc
         public override int Run(string fileOrDirectory)
         {
             Console.WriteLine(fileOrDirectory);
-            MsBuildProject msBuild = MsBuildProject.FromFileOrDirectory(new ProjectCollection(), fileOrDirectory);
+            MsBuildProject msBuild = MsBuildProject.FromFileOrDirectory(ProjectCollection.GlobalProjectCollection, fileOrDirectory);
+
+            if (!msBuild.GetIsWPILibProject())
+            {
+                throw new GracefulException("Detected project is not a WPILib project");
+            }
 
             ISettingsProvider sProvider = new SettingsProvider();
             IOutputWriter cWriter = new ConsoleWriter();
@@ -71,7 +76,8 @@ namespace dotnet_frc
                         var cmdArgs = new List<string>
                         {
                             msBuild.ProjectFile,
-                            "--configuration", "Release"
+                            "--configuration", "Release",
+                            "-o", "frctemp"
                         };
 
                         return Command.CreateDotNet("build", cmdArgs).Execute();
@@ -79,11 +85,6 @@ namespace dotnet_frc
                     });
 
                     await Task.WhenAll(connectionTask, buildTask).ConfigureAwait(false);
-
-                    if (buildTask.Result.ExitCode != 0)
-                    {
-                        
-                    }
 
                     return new Tuple<RoboRioConnection, int>(connectionTask.Result, buildTask.Result.ExitCode);
                 });
@@ -99,6 +100,8 @@ namespace dotnet_frc
                 }
 
                 Console.WriteLine("Connected and built successfully!!!");
+
+                
             }
             
             // IP over team

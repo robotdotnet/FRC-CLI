@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Construction;
@@ -18,10 +19,43 @@ namespace dotnet_frc
         public string ProjectDirectory { get; }
         public string ProjectFile { get; }
 
+        public ProjectRootElement ProjectRoot { get; }
+
         private MsBuildProject(ProjectCollection projects, ProjectRootElement project)
         {
+            ProjectRoot = project;
             ProjectFile = project.FullPath;
             ProjectDirectory = PathUtility.EnsureTrailingSlash(project.DirectoryPath);
+        }
+
+        public ICollection<string> GetTargetFrameworks()
+        {
+            List<string> frameworks = new List<string>();
+            foreach(var item in ProjectRoot.Properties)
+            {
+                if (item.Name == "TargetFramework")
+                {
+                    var split = item.Value.Split(';');
+                    foreach(var s in split)
+                        frameworks.Add(s.Trim());
+                }
+            }
+            return frameworks;
+        }
+
+        public bool GetIsWPILibProject()
+        {
+            foreach(var item in ProjectRoot.Items)
+            {
+                if (item.ItemType == "PackageReference")
+                {
+                    if (item.Include == "FRC.WPILib")
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         public static MsBuildProject FromFileOrDirectory(ProjectCollection projects, string fileOrDirectory)
