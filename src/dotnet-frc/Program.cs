@@ -2,68 +2,93 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Build.Construction;
+using Microsoft.Build.Evaluation;
+using Microsoft.Build.Exceptions;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ProjectModel;
+using Microsoft.DotNet.Tools.Common;
+using Microsoft.DotNet.Tools.Restore;
+using NuGet.Frameworks;
+
 
 namespace dotnet_frc
 {
-    class Program
+    public class AddCommand : DotNetTopLevelCommandBase
     {
-        static void Main(string[] args)
-        {
-            Project project;
-            var currentDirectory = @"C:\Users\thadh\Documents\GitHub\RobotDotNet\NetworkTables\src\FRC.NetworkTables";
-            if (ProjectReader.TryGetProject(currentDirectory, out project))
+        protected override string CommandName => "frc";
+        protected override string FullCommandNameLocalized => ".NET FRC Utility";
+        protected override string ArgumentName => Constants.ProjectArgumentName;
+        protected override string ArgumentDescriptionLocalized => "FRC deploy and setup utility";
+        internal override List<Func<DotNetSubCommandBase>> SubCommands =>
+            new List<Func<DotNetSubCommandBase>>
             {
-                if (project.Files.SourceFiles.Any())
-                {
-                    Console.WriteLine("Files:");
-                    foreach (var file in project.Files.SourceFiles)
-                        Console.WriteLine("  {0}", file.Replace(currentDirectory, ""));
-                }
-                if (project.Dependencies.Any())
-                {
-                    Console.WriteLine("Dependencies:");
-                    foreach (var dependancy in project.Dependencies)
-                    {
-                        Console.WriteLine("  {0} - Line:{1}, Column:{2}",
-                                dependancy.SourceFilePath.Replace(currentDirectory, ""),
-                                dependancy.SourceLine,
-                                dependancy.SourceColumn);
-                    }
-                }
-            }
-
-            // Create a workspace
-            var workspace = new BuildWorkspace(ProjectReaderSettings.ReadFromEnvironment());
-
-            // Fetch the ProjectContexts
-            var projectPath = project.ProjectFilePath;
-            /*
-            var runtimeIdentifiers = 
-                RuntimeEnvironmentRidExtensions.GetAllCandidateRuntimeIdentifiers();
-            var projectContexts = workspace.GetProjectContextCollection(projectPath)
-                //.EnsureValid(projectPath)
-                .FrameworkOnlyContexts
-                .Select(c => workspace.GetRuntimeContext(c, runtimeIdentifiers))
-                .ToList();
-
-            // Setup the build arguments
-            var projectContextToBuild = projectContexts.First();
-            */
-            var cmdArgs = new List<string>
-            {
-                projectPath,
-                "--configuration", "Release",
+                DeployCommand.Create,
             };
 
-            // Build!!
-            //Console.WriteLine("Building Project for {0}", projectContextToBuild.RuntimeIdentifier);
-            var result = Command.CreateDotNet("build", cmdArgs).Execute();
-            Console.WriteLine("Build {0}", result.ExitCode == 0 ? "SUCCEEDED" : "FAILED");
+        public static int Run(string[] args)
+        {
+            var command = new AddCommand();
+            return command.RunCommand(args);
+        }
+    }
+
+    class Program
+    {
+        static int Main(string[] args)
+        {
+            DebugHelper.HandleDebugSwitch(ref args);
+            return AddCommand.Run(args);
+            
+            
+/*
+            
+
+            Microsoft.DotNet.Cli.CommandLine.CommandLineApplication cmd = new Microsoft.DotNet.Cli.CommandLine.CommandLineApplication(throwOnUnexpectedArg: false)
+            {
+                Name = "frc",
+                FullName = ".NET FRC Utility",
+                Description = "FRC deploy and setup utility",
+                HandleRemainingArguments = true,
+                ArgumentSeparatorHelpText = Microsoft.DotNet.Cli.CommandLine.HelpMessageStrings.MSBuildAdditionalArgsHelpText,
+            };
+
+            cmd.HelpOption("-h|--help");
+
+            var argRoot = cmd.Argument(
+                    $"[{LocalizableStrings.CmdArgument}]",
+                    LocalizableStrings.CmdArgumentDescription,
+                    multipleValues: true); 
+
+            cmd.OnExecute(() =>
+            {
+                var msbuildArgs = new List<string>()
+                {
+                     "/NoLogo", 
+                     "/t:Restore", 
+                     "/ConsoleLoggerParameters:Verbosity=Minimal" 
+                };
+
+                foreach (var i in argRoot.Values)
+                {
+                    Console.WriteLine(i);
+                }
+
+                return 0;
+            });
+
+            cmd.Execute(args);
+
+            ProjectCollection collection = new ProjectCollection();
+            string loc = @"C:\Users\thadh\Documents\VSTests\src\Robot451";
+            MsBuildProject msProject = MsBuildProject.FromFileOrDirectory(collection, loc);
+
+            Console.WriteLine(msProject.ProjectDirectory);
+            Console.WriteLine(msProject.ProjectFile);
 
 
             Console.WriteLine("Hello World!");
+            */
         }
     }
 }

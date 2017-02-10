@@ -7,7 +7,12 @@
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceRoot}\\src\\dotnet-frc\\bin\\Debug\\netcoreapp1.0\\dotnet-frc.dll",
-            "args": [],
+            "args": [
+                "C:\\Users\\thadh\\Documents\\VSTests\\src\\Robot451",
+                "deploy",
+                "-t", 
+                "9999"
+            ],
             "cwd": "${workspaceRoot}",
             "externalConsole": false,
             "stopAtEntry": false,
