@@ -28,21 +28,6 @@ namespace dotnet_frc
             ProjectDirectory = PathUtility.EnsureTrailingSlash(project.DirectoryPath);
         }
 
-        public ICollection<string> GetTargetFrameworks()
-        {
-            List<string> frameworks = new List<string>();
-            foreach(var item in ProjectRoot.Properties)
-            {
-                if (item.Name == "TargetFramework")
-                {
-                    var split = item.Value.Split(';');
-                    foreach(var s in split)
-                        frameworks.Add(s.Trim());
-                }
-            }
-            return frameworks;
-        }
-
         public bool GetIsWPILibProject()
         {
             foreach(var item in ProjectRoot.Items)
@@ -56,6 +41,18 @@ namespace dotnet_frc
                 }
             }
             return false;
+        }
+
+        public string GetProjectAssemblyName()
+        {
+            foreach(var item in ProjectRoot.Properties)
+            {
+                if (item.Name == "AssemblyName")
+                {
+                    return item.Value + ".exe";
+                }
+            }
+            return Path.GetFileNameWithoutExtension(ProjectFile) + ".exe";
         }
 
         public static MsBuildProject FromFileOrDirectory(ProjectCollection projects, string fileOrDirectory)

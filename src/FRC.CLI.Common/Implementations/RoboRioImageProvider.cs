@@ -12,10 +12,10 @@ namespace FRC.CLI.Common.Implementations
 {
     public class RoboRioImageProvider : IRoboRioImageProvider
     {
-        private IWPILibDeploySettingsProvider m_wpilibDeploySettingsProvider;
-        public RoboRioImageProvider(IWPILibDeploySettingsProvider wpilibDeploySettingsProvider)
+        private IWPILibImageSettingsProvider m_wpilibImageSettingsProvider;
+        public RoboRioImageProvider(IWPILibImageSettingsProvider wpilibImageSettingsProvider)
         {
-            m_wpilibDeploySettingsProvider = wpilibDeploySettingsProvider;
+            m_wpilibImageSettingsProvider = wpilibImageSettingsProvider;
         }
 
         public async Task<bool> CheckCorrectImageAsync(IFileDeployerProvider fileDeployerProvider)
@@ -27,7 +27,7 @@ namespace FRC.CLI.Common.Implementations
 
         public async Task<IList<string>> GetAllowedRoboRioImagesAsync()
         {
-            return await m_wpilibDeploySettingsProvider.GetAllowedImageVersionsAsync().ConfigureAwait(false);
+            return await m_wpilibImageSettingsProvider.GetAllowedImageVersionsAsync().ConfigureAwait(false);
         }
 
         public async Task<string> GetCurrentRoboRioImageAsync(IFileDeployerProvider fileDeployerProvider)

@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using FRC.CLI.Common.Connections;
 using Nito.AsyncEx;
 using FRC.CLI.Base.Interfaces;
+using FRC.CLI.Common;
+using FRC.CLI.Common.Implementations;
 
 namespace dotnet_frc
 {
@@ -47,6 +49,33 @@ namespace dotnet_frc
 
             return command;
         }
+
+        public async Task RunDeployAsync(MsBuildProject buildProject)
+        {
+            DotNetCodeBuilder dnCodeBuilder = new DotNetCodeBuilder(buildProject);
+            DotNetNativeContentLocalLocationProvider dnNativeContentProvider = new DotNetNativeContentLocalLocationProvider();
+            WPILibNativeDeploySettingsProvider wpiNativeDeployProvider = new WPILibNativeDeploySettingsProvider();
+            DotNetExceptionThrowerProvider dnExProvider = new DotNetExceptionThrowerProvider();
+            NativePackageDeploymentProvider nativeDeploymentProvider = new NativePackageDeploymentProvider(wpiNativeDeployProvider, dnNativeContentProvider, dnExProvider);
+
+            WPILibImageSettingsProvider wpiImageSetProvider = new WPILibImageSettingsProvider();
+
+            RoboRioImageProvider rioImageProvider = new RoboRioImageProvider(wpiImageSetProvider);
+
+            ConsoleWriter cWriter = new ConsoleWriter();
+
+            RoboRioDependencyCheckerProvider rioDepProvider = new RoboRioDependencyCheckerProvider();
+
+            RobotCodeDeploymentProvider codeDeployProvider = new RobotCodeDeploymentProvider(cWriter);
+
+            CodeDeployer deployer = new CodeDeployer(dnCodeBuilder, dnExProvider, rioImageProvider, cWriter, rioDepProvider, codeDeployProvider, nativeDeploymentProvider);
+
+            using (RoboRioConnection rioConn = await RoboRioConnection.StartConnectionTaskAsync(9999, cWriter))
+            {
+                await deployer.DeployCode(rioConn);
+            }
+        }
+
         public override int Run(string fileOrDirectory)
         {
             Console.WriteLine(fileOrDirectory);
@@ -56,6 +85,12 @@ namespace dotnet_frc
             {
                 throw new GracefulException("Detected project is not a WPILib project");
             }
+
+            AsyncContext.Run(async () => await RunDeployAsync(msBuild));
+
+            
+
+            /*
 
             ISettingsProvider sProvider = new SettingsProvider();
             IOutputWriter cWriter = new ConsoleWriter();
@@ -105,6 +140,8 @@ namespace dotnet_frc
             }
             
             // IP over team
+
+            */
 
             return 0;
         }

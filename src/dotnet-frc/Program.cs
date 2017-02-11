@@ -17,7 +17,7 @@ using NuGet.Frameworks;
 
 namespace dotnet_frc
 {
-    public class AddCommand : DotNetTopLevelCommandBase
+    public class FrcCommand : DotNetTopLevelCommandBase
     {
         protected override string CommandName => "frc";
         protected override string FullCommandNameLocalized => ".NET FRC Utility";
@@ -31,7 +31,7 @@ namespace dotnet_frc
 
         public static int Run(string[] args)
         {
-            var command = new AddCommand();
+            var command = new FrcCommand();
             return command.RunCommand(args);
         }
     }
@@ -55,7 +55,7 @@ namespace dotnet_frc
             
 
             DebugHelper.HandleDebugSwitch(ref args);
-            return AddCommand.Run(args);
+            return FrcCommand.Run(args);
         }
     }
 }

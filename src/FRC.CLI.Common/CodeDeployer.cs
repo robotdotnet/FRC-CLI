@@ -50,21 +50,16 @@ namespace FRC.CLI.Common
             }
 
 
-            bool nativeDeployResult = await m_nativePackageDeploymentProvider.DeployNativeFilesAsync(fileDeployerProvider).ConfigureAwait(false);
-
-            if (!nativeDeployResult)
-            {
-                throw m_exceptionThrowerProvider.ThrowException("Could not properly deploy native files");
-            }
+            bool nativeDeployedDeploy = await m_nativePackageDeploymentProvider.DeployNativeFilesAsync(fileDeployerProvider).ConfigureAwait(false);
 
             // Deploy robot code
-            if (!await m_robotCodeDeploymentProvider.DeployRobotCodeAsync().ConfigureAwait(false))
+            if (!await m_robotCodeDeploymentProvider.DeployRobotCodeAsync(buildResult.Item2, fileDeployerProvider).ConfigureAwait(false))
             {
                 throw m_exceptionThrowerProvider.ThrowException("Could not deploy robot code");
             }
 
             // Start robot code
-            if (!await m_robotCodeDeploymentProvider.StartRobotCodeAsync().ConfigureAwait(false))
+            if (!await m_robotCodeDeploymentProvider.StartRobotCodeAsync(buildResult.Item3, fileDeployerProvider).ConfigureAwait(false))
             {
                 throw m_exceptionThrowerProvider.ThrowException("Could not property start robot code");
             }

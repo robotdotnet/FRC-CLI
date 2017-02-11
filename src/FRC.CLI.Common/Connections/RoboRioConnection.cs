@@ -35,24 +35,21 @@ namespace FRC.CLI.Common.Connections
 
         private IOutputWriter m_outputWriter;
 
-        private ISettingsProvider m_settingsProvider;
-
 
         public bool Connected => m_remoteIp != null;
 
         public IPAddress ConnectionIp => m_remoteIp;
 
-        public RoboRioConnection(int teamNumber, TimeSpan sshTimeout, IOutputWriter outputWriter, ISettingsProvider settingsProvider)
+        public RoboRioConnection(int teamNumber, TimeSpan sshTimeout, IOutputWriter outputWriter)
         {
             m_teamNumber = teamNumber;
             m_sshTimeout = sshTimeout;
             m_outputWriter = outputWriter;
-            m_settingsProvider = settingsProvider;
         }
 
-        public static async Task<RoboRioConnection> StartConnectionTaskAsync(int teamNumber, IOutputWriter outputWriter, ISettingsProvider settingsProvider)
+        public static async Task<RoboRioConnection> StartConnectionTaskAsync(int teamNumber, IOutputWriter outputWriter)
         {
-            var roboRioConnection = new RoboRioConnection(teamNumber, TimeSpan.FromSeconds(2), outputWriter, settingsProvider);
+            var roboRioConnection = new RoboRioConnection(teamNumber, TimeSpan.FromSeconds(2), outputWriter);
             bool connected = await roboRioConnection.CreateConnectionAsync().ConfigureAwait(false);
             if (connected)
             {
@@ -68,9 +65,9 @@ namespace FRC.CLI.Common.Connections
             return roboRioConnection;
         }
 
-        public static RoboRioConnection StartConnectionTask(int teamNumber, IOutputWriter outputWriter, ISettingsProvider settingsProvider)
+        public static RoboRioConnection StartConnectionTask(int teamNumber, IOutputWriter outputWriter)
         {
-            var roboRioConnection = new RoboRioConnection(teamNumber, TimeSpan.FromSeconds(2), outputWriter, settingsProvider);
+            var roboRioConnection = new RoboRioConnection(teamNumber, TimeSpan.FromSeconds(2), outputWriter);
             bool connected = roboRioConnection.CreateConnection();
             if (connected)
             {
@@ -293,7 +290,7 @@ namespace FRC.CLI.Common.Connections
                     throw new ArgumentOutOfRangeException(nameof(user), user, null);
             }
 
-            bool verbose = m_settingsProvider.Verbose;
+            bool verbose = true;
             foreach (FileInfo fileInfo in from string s in files where File.Exists(s) select new FileInfo(s))
             {
                 if (verbose)
@@ -320,7 +317,7 @@ namespace FRC.CLI.Common.Connections
                     throw new ArgumentOutOfRangeException(nameof(user), user, null);
             }
 
-            bool verbose = m_settingsProvider.Verbose;
+            bool verbose = true;
             foreach (FileInfo fileInfo in from string s in files where File.Exists(s) select new FileInfo(s))
             {
                 if (verbose)
@@ -352,7 +349,7 @@ namespace FRC.CLI.Common.Connections
                 return false;
             }
 
-            bool verbose = m_settingsProvider.Verbose;
+            bool verbose = true;
             if (verbose)
             {
                 m_outputWriter.WriteLine($"Receiving File: {remoteFile}");
@@ -388,7 +385,7 @@ namespace FRC.CLI.Common.Connections
                 return false;
             }
 
-            bool verbose = m_settingsProvider.Verbose;
+            bool verbose = true;
             if (verbose)
             {
                 await m_outputWriter.WriteLineAsync($"Receiving File: {remoteFile}").ConfigureAwait(false);
@@ -421,7 +418,7 @@ namespace FRC.CLI.Common.Connections
 
             Dictionary<string, SshCommand> retCommands = new Dictionary<string, SshCommand>();
 
-            bool verbose = m_settingsProvider.Verbose;
+            bool verbose = true;
             foreach (string s in commands)
             {
                 if (verbose)
@@ -452,7 +449,7 @@ namespace FRC.CLI.Common.Connections
 
             Dictionary<string, SshCommand> retCommands = new Dictionary<string, SshCommand>();
 
-            bool verbose = m_settingsProvider.Verbose;
+            bool verbose = true;
             foreach (string s in commands)
             {
                 if (verbose)
