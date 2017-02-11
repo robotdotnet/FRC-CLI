@@ -8,21 +8,19 @@ using FRC.CLI.Common.Connections;
 
 namespace FRC.CLI.Common
 {
-    public class CachedFileHelper
+    public class CachedFileHelper : INativePackageDeploymentProvider
     {
-        IFileDeployer m_fileDeployer;
         IOutputWriter m_outputWriter;
 
-        public CachedFileHelper(IOutputWriter outputWriter, IFileDeployer fileDeployer)
+        public CachedFileHelper(IOutputWriter outputWriter)
         {
             m_outputWriter = outputWriter;
-            m_fileDeployer = fileDeployer;
         }
 
-        public async Task<bool> CheckAndDeployNativeLibrariesAsync(string remoteDirectory, string propertiesName, string dirToUpload, IList<string> ignoreFiles)
+        public async Task<bool> CheckAndDeployNativeLibrariesAsync(string remoteDirectory, string propertiesName, string dirToUpload, IList<string> ignoreFiles, IFileDeployerProvider fileDeployerProvider)
         {
             MemoryStream stream = new MemoryStream();
-            bool readFile = await m_fileDeployer.ReceiveFileAsync($"{remoteDirectory}/{propertiesName}.properties", stream,
+            bool readFile = await fileDeployerProvider.ReceiveFileAsync($"{remoteDirectory}/{propertiesName}.properties", stream,
                             ConnectionUser.LvUser).ConfigureAwait(false);
 
             string nativeLoc = dirToUpload;
@@ -39,7 +37,7 @@ namespace FRC.CLI.Common
             if (!readFile)
             {
                 // Libraries definitely do not exist, deploy
-                return await DeployNativeLibrariesAsync(fileMd5List, remoteDirectory, propertiesName).ConfigureAwait(false);
+                return await DeployNativeLibrariesAsync(fileMd5List, remoteDirectory, propertiesName, fileDeployerProvider).ConfigureAwait(false);
             }
 
             stream.Position = 0;
@@ -73,7 +71,7 @@ namespace FRC.CLI.Common
 
             if (foundError || readCount != fileMd5List.Count)
             {
-                return await DeployNativeLibrariesAsync(fileMd5List, remoteDirectory, propertiesName).ConfigureAwait(false);
+                return await DeployNativeLibrariesAsync(fileMd5List, remoteDirectory, propertiesName, fileDeployerProvider).ConfigureAwait(false);
             }
 
             await m_outputWriter.WriteLineAsync("Native libraries exist. Skipping deploy").ConfigureAwait(false);
@@ -109,7 +107,7 @@ namespace FRC.CLI.Common
             }
         }
 
-        public async Task<bool> DeployNativeLibrariesAsync(List<Tuple<string, string>> files, string remoteDirectory, string propertiesName)
+        public async Task<bool> DeployNativeLibrariesAsync(List<Tuple<string, string>> files, string remoteDirectory, string propertiesName, IFileDeployerProvider fileDeployerProvider)
         {
             List<string> fileList = new List<string>(files.Count);
             bool nativeDeploy = false;
@@ -146,6 +144,10 @@ namespace FRC.CLI.Common
             }
 
             return nativeDeploy;
+        }
+
+        public async Task<bool> DeployNativeFilesAsync(IFileDeployerProvider fileDeployerProvider)
+        {
         }
     }
 }

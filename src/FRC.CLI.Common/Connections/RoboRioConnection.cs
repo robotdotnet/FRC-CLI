@@ -14,7 +14,7 @@ using Renci.SshNet.Common;
 
 namespace FRC.CLI.Common.Connections
 {
-    public class RoboRioConnection : IFileDeployer
+    public class RoboRioConnection : IFileDeployerProvider
     {
         public const string RoboRioMdnsFormatString = "roborio-{0}-FRC.local";
         public const string RoboRioLanFormatString = "roborio-{0}-FRC.lan";

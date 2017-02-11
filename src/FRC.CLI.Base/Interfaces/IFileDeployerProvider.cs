@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -7,7 +8,7 @@ using Renci.SshNet;
 
 namespace FRC.CLI.Base.Interfaces
 {
-    public interface IFileDeployerProvider
+    public interface IFileDeployerProvider : IDisposable
     {
         bool Connected { get; }
         IPAddress ConnectionIp { get; }

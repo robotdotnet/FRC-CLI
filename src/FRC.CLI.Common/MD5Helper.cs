@@ -1,12 +1,13 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace FRC.CLI.Common
 {
     public static class MD5Helper
     {
-        public static string Md5Sum(string fileName)
+        public static async Task<string> Md5SumAsync(string fileName)
         {
             byte[] fileMd5Sum = null;
 
@@ -17,7 +18,10 @@ namespace FRC.CLI.Common
                 {
                     using (MD5 md5 = MD5.Create())
                     {
-                        fileMd5Sum = md5.ComputeHash(stream);
+                        await Task.Run(() =>
+                        {
+                            fileMd5Sum = md5.ComputeHash(stream);
+                        });
                     }
                 }
             }

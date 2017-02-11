@@ -6,10 +6,12 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace dotnet_frc
 {
-    public class DotNetCodeBuilder : ICodeBuilder
+    public class DotNetCodeBuilder : ICodeBuilderProvider
     {
-        public async Task<Tuple<int, string>> BuildCodeAsync(bool debug, string projectFileLoc)
+        public async Task<Tuple<int, string>> BuildCodeAsync()
         {
+            throw new NotImplementedException();
+            /*
             return await Task.Run(() =>
             {
                 string outputLoc = "bin\\frctemp";
@@ -23,6 +25,7 @@ namespace dotnet_frc
                 var result = Command.CreateDotNet("build", cmdArgs).Execute();
                 return new Tuple<int, string>(result.ExitCode, outputLoc);
             });
+            */
         }
     }
 }
