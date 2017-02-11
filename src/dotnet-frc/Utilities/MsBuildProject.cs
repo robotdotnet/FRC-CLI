@@ -21,8 +21,11 @@ namespace dotnet_frc
 
         public ProjectRootElement ProjectRoot { get; }
 
+        private ProjectCollection _projects;
+
         private MsBuildProject(ProjectCollection projects, ProjectRootElement project)
         {
+            _projects = projects;
             ProjectRoot = project;
             ProjectFile = project.FullPath;
             ProjectDirectory = PathUtility.EnsureTrailingSlash(project.DirectoryPath);
@@ -53,6 +56,19 @@ namespace dotnet_frc
                 }
             }
             return Path.GetFileNameWithoutExtension(ProjectFile) + ".exe";
+        }
+
+        public MsBuildProject GetPropsFile()
+        {
+            var projectFileName = Directory.GetFiles(Path.Combine(ProjectDirectory, "obj")).Where(x => x.EndsWith("csproj.nuget.g.props")).FirstOrDefault();
+
+            var project = TryOpenProject(_projects, projectFileName);
+            if (project == null)
+            {
+                return null;
+            }
+
+            return new MsBuildProject(_projects, project);
         }
 
         public static MsBuildProject FromFileOrDirectory(ProjectCollection projects, string fileOrDirectory)

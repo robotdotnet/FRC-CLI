@@ -16,7 +16,6 @@ namespace dotnet_frc
     internal class DeployCommand : DotNetSubCommandBase
     {
         private CommandOption _debugOption;
-        private CommandOption _ipOption;
         private CommandOption _teamOption;
 
         public static DotNetSubCommandBase Create()
@@ -35,12 +34,6 @@ namespace dotnet_frc
                 CommandOptionType.NoValue
             );
 
-            command._ipOption = command.Option(
-                "-i|--ipaddr",
-                "Force a deploy IP address",
-                CommandOptionType.SingleValue
-            );
-
             command._teamOption = command.Option(
                 "-t|--team",
                 "Force a team",
@@ -52,21 +45,23 @@ namespace dotnet_frc
 
         public async Task RunDeployAsync(MsBuildProject buildProject)
         {
-            DotNetCodeBuilder dnCodeBuilder = new DotNetCodeBuilder(buildProject);
-            DotNetNativeContentLocalLocationProvider dnNativeContentProvider = new DotNetNativeContentLocalLocationProvider();
-            WPILibNativeDeploySettingsProvider wpiNativeDeployProvider = new WPILibNativeDeploySettingsProvider();
             DotNetExceptionThrowerProvider dnExProvider = new DotNetExceptionThrowerProvider();
-            NativePackageDeploymentProvider nativeDeploymentProvider = new NativePackageDeploymentProvider(wpiNativeDeployProvider, dnNativeContentProvider, dnExProvider);
+            DotNetProjectInformationProvider dnPjtProvider = new DotNetProjectInformationProvider(buildProject);
+            DotNetBuildSettingsProvider dnBsProvider = new DotNetBuildSettingsProvider(_debugOption.HasValue());
+            DotNetCodeBuilder dnCodeBuilder = new DotNetCodeBuilder(dnPjtProvider, dnBsProvider, dnExProvider);
+            WPILibNativeDeploySettingsProvider wpiNativeDeployProvider = new WPILibNativeDeploySettingsProvider();
+            
+            NativePackageDeploymentProvider nativeDeploymentProvider = new NativePackageDeploymentProvider(wpiNativeDeployProvider, dnPjtProvider, dnExProvider);
 
             WPILibImageSettingsProvider wpiImageSetProvider = new WPILibImageSettingsProvider();
 
-            RoboRioImageProvider rioImageProvider = new RoboRioImageProvider(wpiImageSetProvider);
+            RoboRioImageProvider rioImageProvider = new RoboRioImageProvider(wpiImageSetProvider, dnExProvider);
 
             ConsoleWriter cWriter = new ConsoleWriter();
 
             RoboRioDependencyCheckerProvider rioDepProvider = new RoboRioDependencyCheckerProvider();
 
-            RobotCodeDeploymentProvider codeDeployProvider = new RobotCodeDeploymentProvider(cWriter);
+            RobotCodeDeploymentProvider codeDeployProvider = new RobotCodeDeploymentProvider(cWriter, dnPjtProvider, nativeDeploymentProvider, dnBsProvider);
 
             CodeDeployer deployer = new CodeDeployer(dnCodeBuilder, dnExProvider, rioImageProvider, cWriter, rioDepProvider, codeDeployProvider, nativeDeploymentProvider);
 

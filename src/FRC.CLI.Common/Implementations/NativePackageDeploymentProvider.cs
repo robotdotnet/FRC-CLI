@@ -10,14 +10,16 @@ namespace FRC.CLI.Common.Implementations
     public class NativePackageDeploymentProvider : INativePackageDeploymentProvider
     {
         IWPILibNativeDeploySettingsProvider m_wpilibNativeDeploySettingsProvider;
-        INativeContentLocalLocationProvider m_nativeContentLocalLocationProvider;
+        IProjectInformationProvider m_projectInformationProvider;
         IExceptionThrowerProvider m_exceptionThrowerProvider;
 
+        public string NativeDirectory => "wpinative";
+
         public NativePackageDeploymentProvider(IWPILibNativeDeploySettingsProvider wpilibNativeDeploySettingsProvider,
-            INativeContentLocalLocationProvider nativeContentLocalLocationProvider, IExceptionThrowerProvider exceptionThrowerProvider)
+            IProjectInformationProvider projectInformationProvider, IExceptionThrowerProvider exceptionThrowerProvider)
         {
             m_wpilibNativeDeploySettingsProvider = wpilibNativeDeploySettingsProvider;
-            m_nativeContentLocalLocationProvider = nativeContentLocalLocationProvider;
+            m_projectInformationProvider = projectInformationProvider;
             m_exceptionThrowerProvider = exceptionThrowerProvider;
         }
 
@@ -28,18 +30,18 @@ namespace FRC.CLI.Common.Implementations
                 $"{m_wpilibNativeDeploySettingsProvider.NativeDeployLocation}/{m_wpilibNativeDeploySettingsProvider.NativePropertiesFileName}",
                 memStream, ConnectionUser.Admin).ConfigureAwait(false);
             
-            string nativeLoc = await m_nativeContentLocalLocationProvider.GetNativeContentLocationAsync().ConfigureAwait(false);
+            string buildPath = await m_projectInformationProvider.GetProjectBuildDirectoryAsync().ConfigureAwait(false);
+            string nativeLoc = Path.Combine(buildPath, NativeDirectory);
 
             var fileMd5List = await GetMd5ForFilesAsync(nativeLoc, m_wpilibNativeDeploySettingsProvider.NativeIgnoreFiles);
 
             if (fileMd5List == null)
             {
-                throw m_exceptionThrowerProvider.ThrowException("Native libraries cannot be found");
+                return false;
             }
             if (!readFile)
             {
-                await DeployNativeLibrariesAsync(fileMd5List, fileDeployerProvider).ConfigureAwait(false);
-                return true;
+                return await DeployNativeLibrariesAsync(fileMd5List, fileDeployerProvider).ConfigureAwait(false);
             }
 
             memStream.Position = 0;
@@ -73,11 +75,11 @@ namespace FRC.CLI.Common.Implementations
 
             if (foundError || readCount != fileMd5List.Count)
             {
-                await DeployNativeLibrariesAsync(fileMd5List, fileDeployerProvider).ConfigureAwait(false);
-                return true;
+                return await DeployNativeLibrariesAsync(fileMd5List, fileDeployerProvider).ConfigureAwait(false);
             }
 
-            return false;
+
+            return true;
         }
 
         public async Task<List<Tuple<string, string>>> GetMd5ForFilesAsync(string fileLocation, IList<string> ignoreFiles)
@@ -109,7 +111,7 @@ namespace FRC.CLI.Common.Implementations
             }
         }
 
-        public async Task DeployNativeLibrariesAsync(List<Tuple<string, string>> files, IFileDeployerProvider fileDeployerProvider)
+        public async Task<bool> DeployNativeLibrariesAsync(List<Tuple<string, string>> files, IFileDeployerProvider fileDeployerProvider)
         {
             List<string> fileList = new List<string>(files.Count);
             bool nativeDeploy = false;
@@ -145,10 +147,7 @@ namespace FRC.CLI.Common.Implementations
 
             }
 
-            if (!nativeDeploy)
-            {
-                throw m_exceptionThrowerProvider.ThrowException("Could not properly deploy native files");
-            }
+            return nativeDeploy;
         }
     }
 }

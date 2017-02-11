@@ -9,28 +9,40 @@ namespace dotnet_frc
 {
     public class DotNetCodeBuilder : ICodeBuilderProvider
     {
-        private MsBuildProject m_projectFile;
+        private IProjectInformationProvider m_projectInformationProvider;
+        private IBuildSettingsProvider m_buildSettingsProvider;
+        private IExceptionThrowerProvider m_exceptionThrowerProvider;
 
-        public DotNetCodeBuilder(MsBuildProject projectFile)
+        public DotNetCodeBuilder(IProjectInformationProvider projectInformationProvider, IBuildSettingsProvider buildSettingsProvider,
+            IExceptionThrowerProvider exceptionThrowerProvider)
         {
-            m_projectFile = projectFile;
+            m_projectInformationProvider = projectInformationProvider;
+            m_buildSettingsProvider = buildSettingsProvider;
+            m_exceptionThrowerProvider = exceptionThrowerProvider;
         }
 
-        public async Task<Tuple<int, string, string>> BuildCodeAsync()
+        public async Task<bool> BuildCodeAsync()
         {
-            return await Task.Run(() =>
+            string outputLoc = await m_projectInformationProvider.GetProjectBuildDirectoryAsync().ConfigureAwait(false);
+            string projectDir = await m_projectInformationProvider.GetProjectRootDirectoryAsync().ConfigureAwait(false);
+            int retVal = await Task.Run(() =>
             {
-                string outputLoc = "bin\\frctemp";
+                string configuration = "Release";
+                if (m_buildSettingsProvider.Debug)
+                {
+                    configuration = "Debug";
+                }
                 var cmdArgs = new List<string>
                 {
-                    m_projectFile.ProjectDirectory,
-                    "--configuration", "Release",
+                    projectDir,
+                    "--configuration", configuration,
                     "-o", outputLoc
                 };
 
                 var result = Command.CreateDotNet("build", cmdArgs).Execute();
-                return new Tuple<int, string, string>(result.ExitCode, Path.Combine(m_projectFile.ProjectDirectory, outputLoc), m_projectFile.GetProjectAssemblyName());
-            });
+                return result.ExitCode;
+            }).ConfigureAwait(false);
+            return retVal == 0;
         }
     }
 }

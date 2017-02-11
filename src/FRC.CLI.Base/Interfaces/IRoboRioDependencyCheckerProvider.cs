@@ -4,6 +4,6 @@ namespace FRC.CLI.Base.Interfaces
 {
     public interface IRoboRioDependencyCheckerProvider
     {
-         Task<bool> CheckIfDependenciesAreSatisfied();
+         Task<bool> CheckIfDependenciesAreSatisfied(IFileDeployerProvider fileDeployerProvider);
     }
 }

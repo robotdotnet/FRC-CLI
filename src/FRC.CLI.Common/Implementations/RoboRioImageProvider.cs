@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FRC.CLI.Base.Interfaces;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Xml;
@@ -13,9 +11,12 @@ namespace FRC.CLI.Common.Implementations
     public class RoboRioImageProvider : IRoboRioImageProvider
     {
         private IWPILibImageSettingsProvider m_wpilibImageSettingsProvider;
-        public RoboRioImageProvider(IWPILibImageSettingsProvider wpilibImageSettingsProvider)
+        private IExceptionThrowerProvider m_exceptionThrowerProvider;
+        public RoboRioImageProvider(IWPILibImageSettingsProvider wpilibImageSettingsProvider, 
+            IExceptionThrowerProvider exceptionThrowerProvider)
         {
             m_wpilibImageSettingsProvider = wpilibImageSettingsProvider;
+            m_exceptionThrowerProvider = exceptionThrowerProvider;
         }
 
         public async Task<bool> CheckCorrectImageAsync(IFileDeployerProvider fileDeployerProvider)

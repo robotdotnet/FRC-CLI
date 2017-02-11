@@ -4,6 +4,8 @@ namespace FRC.CLI.Base.Interfaces
 {
     public interface INativePackageDeploymentProvider
     {
+        string NativeDirectory { get; }
+
         /// <summary>
         /// Deploys native files to the robot
         /// </summary>
