@@ -3,6 +3,9 @@
     <ProjectReference Include="..\FRC.CLI.Base\FRC.CLI.Base.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="newtonsoft.json">
+      <Version>9.0.1</Version>
+    </PackageReference>
     <PackageReference Include="Nito.AsyncEx.Context">
       <Version>1.1.0</Version>
     </PackageReference>

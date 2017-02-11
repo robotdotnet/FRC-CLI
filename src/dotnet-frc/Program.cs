@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FRC.CLI.Base.Models;
 using FRC.CLI.Common.Connections;
 using FRC.CLI.Common.Implementations;
 using Microsoft.Build.Construction;
@@ -11,6 +12,7 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.Restore;
+using Newtonsoft.Json;
 using Nito.AsyncEx;
 using NuGet.Frameworks;
 
@@ -27,6 +29,7 @@ namespace dotnet_frc
             new List<Func<DotNetSubCommandBase>>
             {
                 DeployCommand.Create,
+                KillCommand.Create
             };
 
         public static int Run(string[] args)
@@ -51,8 +54,6 @@ namespace dotnet_frc
                 }
             });
             */
-
-            
 
             DebugHelper.HandleDebugSwitch(ref args);
             return FrcCommand.Run(args);

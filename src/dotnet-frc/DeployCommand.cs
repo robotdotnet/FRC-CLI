@@ -59,21 +59,49 @@ namespace dotnet_frc
 
             ConsoleWriter cWriter = new ConsoleWriter();
 
+            JsonFrcSettingsProvider frcSettingsProvider = new JsonFrcSettingsProvider(dnExProvider, cWriter, dnPjtProvider);
+
             RoboRioDependencyCheckerProvider rioDepProvider = new RoboRioDependencyCheckerProvider();
 
-            RobotCodeDeploymentProvider codeDeployProvider = new RobotCodeDeploymentProvider(cWriter, dnPjtProvider, nativeDeploymentProvider, dnBsProvider);
+            RobotCodeDeploymentProvider codeDeployProvider = new RobotCodeDeploymentProvider(cWriter, dnPjtProvider, nativeDeploymentProvider, dnBsProvider, frcSettingsProvider);
 
             CodeDeployer deployer = new CodeDeployer(dnCodeBuilder, dnExProvider, rioImageProvider, cWriter, rioDepProvider, codeDeployProvider, nativeDeploymentProvider);
 
-            using (RoboRioConnection rioConn = await RoboRioConnection.StartConnectionTaskAsync(9999, cWriter))
+            int teamNumber = -1;
+            bool parsed = false;
+            if (_teamOption.HasValue())
             {
+                parsed = int.TryParse(_teamOption.Value(), out teamNumber);
+                if (!parsed)
+                {
+                    cWriter.WriteLine("Could not parse command line team number. Attempting to use settings");
+                }
+            }
+            if (!parsed)
+            {
+                var frcSettings = await frcSettingsProvider.GetFrcSettingsAsync().ConfigureAwait(false);
+                if (frcSettings == null)
+                {
+                    throw dnExProvider.ThrowException("Could not find team number");
+                }
+                if (!int.TryParse(frcSettings.TeamNumber, out teamNumber))
+                {
+                    throw dnExProvider.ThrowException("Cannot parse team number from settings file");
+                }
+            }
+            
+            using (RoboRioConnection rioConn = await RoboRioConnection.StartConnectionTaskAsync(teamNumber, cWriter))
+            {
+                if (!rioConn.Connected)
+                {
+                    throw dnExProvider.ThrowException("Could not connect to roboRio");
+                }
                 await deployer.DeployCode(rioConn);
             }
         }
 
         public override int Run(string fileOrDirectory)
         {
-            Console.WriteLine(fileOrDirectory);
             MsBuildProject msBuild = MsBuildProject.FromFileOrDirectory(ProjectCollection.GlobalProjectCollection, fileOrDirectory);
 
             if (!msBuild.GetIsWPILibProject())

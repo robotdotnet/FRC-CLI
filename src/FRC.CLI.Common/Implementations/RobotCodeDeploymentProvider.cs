@@ -14,16 +14,19 @@ namespace FRC.CLI.Common.Implementations
         IProjectInformationProvider m_projectInformationProvider;
         INativePackageDeploymentProvider m_nativePackageDeploymentProvider;
         IBuildSettingsProvider m_buildSettingsProvider;
+        IFrcSettingsProvider m_frcSettingsProvider;
 
         public RobotCodeDeploymentProvider(IOutputWriter outputWriter,
             IProjectInformationProvider projectInformationProvider,
             INativePackageDeploymentProvider nativePackageDeploymentProvider,
-            IBuildSettingsProvider buildSettingsProvider)
+            IBuildSettingsProvider buildSettingsProvider,
+            IFrcSettingsProvider frcSettingsProvider)
         {
             m_outputWriter = outputWriter;
             m_projectInformationProvider = projectInformationProvider;
             m_nativePackageDeploymentProvider = nativePackageDeploymentProvider;
             m_buildSettingsProvider = buildSettingsProvider;
+            m_frcSettingsProvider = frcSettingsProvider;
         }
 
         public async Task<bool> DeployRobotCodeAsync(IFileDeployerProvider fileDeployerProvider)
