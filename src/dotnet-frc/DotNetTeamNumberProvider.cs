@@ -7,17 +7,59 @@ namespace dotnet_frc
 {
     public class DotNetTeamNumberProvider : ITeamNumberProvider
     {
-        CommandOption m_teamOption;
-        IFrcSettingsProvider m_frcSettingsProvider;
+        private IOutputWriter m_outputWriter;
+        private IExceptionThrowerProvider m_exceptionThrowerProvider;
+        private Lazy<IFrcSettingsProvider> m_frcSettingsProvider;
+        private int? m_inputTeamNumber;
 
-        public DotNetTeamNumberProvider(IFrcSettingsProvider frcSettingsProvider)
+        public DotNetTeamNumberProvider(int? inputTeamNumber, IOutputWriter outputWriter,
+            IExceptionThrowerProvider exceptionThrowerProvider, 
+            Lazy<IFrcSettingsProvider> frcSettingsProvider)
         {
-            m_teamOption = teamOption;
+            m_inputTeamNumber = inputTeamNumber;
+            m_outputWriter = outputWriter;
+            m_exceptionThrowerProvider = exceptionThrowerProvider;
+            m_frcSettingsProvider = frcSettingsProvider;
         }
 
-        public Task<int> GetTeamNumberAsync()
+        public async Task<int> GetTeamNumberAsync()
+        {   
+            int teamNumber = -1;
+            if (m_inputTeamNumber != null)
+            {
+                teamNumber = m_inputTeamNumber.Value;
+                if (teamNumber < 0)
+                {
+                    m_outputWriter.WriteLine("Entered team number is not valid. Attempting to read from settings file");
+                }
+            }
+            if (teamNumber < 0)
+            {
+                var frcSettings = await m_frcSettingsProvider.Value.GetFrcSettingsAsync().ConfigureAwait(false);
+                if (frcSettings == null)
+                {
+                    throw m_exceptionThrowerProvider.ThrowException("Could not find team number");
+                }
+                if (!int.TryParse(frcSettings.TeamNumber, out teamNumber))
+                {
+                    throw m_exceptionThrowerProvider.ThrowException("Cannot parse team number from settings file");
+                } 
+            }
+            return teamNumber;
+        }
+
+        internal static int? GetTeamNumberFromCommandOption(CommandOption option)
         {
-            
+            int? valTeamNumber = null;
+            if (option.HasValue())
+            {
+                int temp = 0;
+                if (int.TryParse(option.Value(), out temp))
+                {
+                    valTeamNumber = temp;
+                }
+            }
+            return valTeamNumber;
         }
     }
 }

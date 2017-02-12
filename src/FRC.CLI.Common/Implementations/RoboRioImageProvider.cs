@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Xml;
 using System.Linq;
+using System.Net;
 
 namespace FRC.CLI.Common.Implementations
 {
@@ -12,16 +13,19 @@ namespace FRC.CLI.Common.Implementations
     {
         private IWPILibImageSettingsProvider m_wpilibImageSettingsProvider;
         private IExceptionThrowerProvider m_exceptionThrowerProvider;
+        private IFileDeployerProvider m_fileDeployerProvider;
         public RoboRioImageProvider(IWPILibImageSettingsProvider wpilibImageSettingsProvider, 
-            IExceptionThrowerProvider exceptionThrowerProvider)
+            IExceptionThrowerProvider exceptionThrowerProvider,
+            IFileDeployerProvider fileDeployerProvider)
         {
             m_wpilibImageSettingsProvider = wpilibImageSettingsProvider;
             m_exceptionThrowerProvider = exceptionThrowerProvider;
+            m_fileDeployerProvider = fileDeployerProvider;
         }
 
-        public async Task<bool> CheckCorrectImageAsync(IFileDeployerProvider fileDeployerProvider)
+        public async Task<bool> CheckCorrectImageAsync()
         {
-            string currentImage = await GetCurrentRoboRioImageAsync(fileDeployerProvider).ConfigureAwait(false);
+            string currentImage = await GetCurrentRoboRioImageAsync().ConfigureAwait(false);
             IList<string> allowedImages = await GetAllowedRoboRioImagesAsync().ConfigureAwait(false);
             return allowedImages.Contains(currentImage);
         }
@@ -31,7 +35,7 @@ namespace FRC.CLI.Common.Implementations
             return await m_wpilibImageSettingsProvider.GetAllowedImageVersionsAsync().ConfigureAwait(false);
         }
 
-        public async Task<string> GetCurrentRoboRioImageAsync(IFileDeployerProvider fileDeployerProvider)
+        public async Task<string> GetCurrentRoboRioImageAsync()
         {
             using (HttpClient wc = new HttpClient())
             { 
@@ -42,7 +46,8 @@ namespace FRC.CLI.Common.Implementations
                     new KeyValuePair<string, string>("Items", "system")
                 });
 
-                var reqResult = await wc.PostAsync($"http://{fileDeployerProvider.ConnectionIp.ToString()}/nisysapi/server", content).ConfigureAwait(false);
+                IPAddress connectionIp = await m_fileDeployerProvider.GetConnectionIpAsync().ConfigureAwait(false);
+                var reqResult = await wc.PostAsync($"http://{connectionIp.ToString()}/nisysapi/server", content).ConfigureAwait(false);
                 var result = await reqResult.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
                 var sstring = Encoding.Unicode.GetString(result);

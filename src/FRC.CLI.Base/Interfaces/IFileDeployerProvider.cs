@@ -11,7 +11,8 @@ namespace FRC.CLI.Base.Interfaces
     public interface IFileDeployerProvider : IDisposable
     {
         bool Connected { get; }
-        IPAddress ConnectionIp { get; }
+        Task<IPAddress> GetConnectionIpAsync();
+        IPAddress GetConnectionIp();
         Task<Dictionary<string, SshCommand>> RunCommandsAsync(IList<string> commands, ConnectionUser user);
         Dictionary<string, SshCommand> RunCommands(IList<string> commands, ConnectionUser user);
         Task<bool> ReceiveFileAsync(string remoteFile, Stream receiveStream, ConnectionUser user);

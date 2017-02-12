@@ -12,21 +12,24 @@ namespace FRC.CLI.Common.Implementations
         IWPILibNativeDeploySettingsProvider m_wpilibNativeDeploySettingsProvider;
         IProjectInformationProvider m_projectInformationProvider;
         IExceptionThrowerProvider m_exceptionThrowerProvider;
+        IFileDeployerProvider m_fileDeployerProvider;
 
         public string NativeDirectory => "wpinative";
 
         public NativePackageDeploymentProvider(IWPILibNativeDeploySettingsProvider wpilibNativeDeploySettingsProvider,
-            IProjectInformationProvider projectInformationProvider, IExceptionThrowerProvider exceptionThrowerProvider)
+            IProjectInformationProvider projectInformationProvider, IExceptionThrowerProvider exceptionThrowerProvider,
+            IFileDeployerProvider fileDeployerProvider)
         {
             m_wpilibNativeDeploySettingsProvider = wpilibNativeDeploySettingsProvider;
             m_projectInformationProvider = projectInformationProvider;
             m_exceptionThrowerProvider = exceptionThrowerProvider;
+            m_fileDeployerProvider = fileDeployerProvider;
         }
 
-        public async Task<bool> DeployNativeFilesAsync(IFileDeployerProvider fileDeployerProvider)
+        public async Task<bool> DeployNativeFilesAsync()
         {
             MemoryStream memStream = new MemoryStream();
-            bool readFile = await fileDeployerProvider.ReceiveFileAsync(
+            bool readFile = await m_fileDeployerProvider.ReceiveFileAsync(
                 $"{m_wpilibNativeDeploySettingsProvider.NativeDeployLocation}/{m_wpilibNativeDeploySettingsProvider.NativePropertiesFileName}",
                 memStream, ConnectionUser.Admin).ConfigureAwait(false);
             
@@ -41,7 +44,7 @@ namespace FRC.CLI.Common.Implementations
             }
             if (!readFile)
             {
-                return await DeployNativeLibrariesAsync(fileMd5List, fileDeployerProvider).ConfigureAwait(false);
+                return await DeployNativeLibrariesAsync(fileMd5List).ConfigureAwait(false);
             }
 
             memStream.Position = 0;
@@ -75,7 +78,7 @@ namespace FRC.CLI.Common.Implementations
 
             if (foundError || readCount != fileMd5List.Count)
             {
-                return await DeployNativeLibrariesAsync(fileMd5List, fileDeployerProvider).ConfigureAwait(false);
+                return await DeployNativeLibrariesAsync(fileMd5List).ConfigureAwait(false);
             }
 
 
@@ -111,7 +114,7 @@ namespace FRC.CLI.Common.Implementations
             }
         }
 
-        public async Task<bool> DeployNativeLibrariesAsync(List<Tuple<string, string>> files, IFileDeployerProvider fileDeployerProvider)
+        public async Task<bool> DeployNativeLibrariesAsync(List<Tuple<string, string>> files)
         {
             List<string> fileList = new List<string>(files.Count);
             bool nativeDeploy = false;
@@ -132,11 +135,11 @@ namespace FRC.CLI.Common.Implementations
                 fileList.Add(tempFile);
             }
 
-            nativeDeploy = await fileDeployerProvider.DeployFilesAsync(fileList, 
+            nativeDeploy = await m_fileDeployerProvider.DeployFilesAsync(fileList, 
                 m_wpilibNativeDeploySettingsProvider.NativeDeployLocation, ConnectionUser.Admin).ConfigureAwait(false);
             // TODO: Figure out why trying to deploy the raw MemoryStream was Deadlocking
             //md5Deploy = await rioConn.DeployFileAsync(memStream, $"{remoteDirectory}/{propertiesName}32.properties", ConnectionUser.Admin).ConfigureAwait(false);
-            await fileDeployerProvider.RunCommandsAsync(new string[] {"ldconfig"}, ConnectionUser.Admin).ConfigureAwait(false);
+            await m_fileDeployerProvider.RunCommandsAsync(new string[] {"ldconfig"}, ConnectionUser.Admin).ConfigureAwait(false);
 
             try
             {

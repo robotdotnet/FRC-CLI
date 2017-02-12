@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
 using FRC.CLI.Base.Enums;
 using FRC.CLI.Base.Interfaces;
@@ -21,7 +20,7 @@ namespace FRC.CLI.Common.Connections
         public const string RoboRioUSBIp = "172.22.11.2";
         public const string RoboRioIpFormatString = "10.{0}.{1}.2";
 
-        private int m_teamNumber;
+        private ITeamNumberProvider m_teamNumberProvider;
         private IPAddress m_remoteIp;
         private TimeSpan m_sshTimeout;
         
@@ -40,18 +39,18 @@ namespace FRC.CLI.Common.Connections
 
         public bool Connected => m_remoteIp != null;
 
-        public IPAddress ConnectionIp => m_remoteIp;
-
-        public RoboRioConnection(int teamNumber, TimeSpan sshTimeout, IOutputWriter outputWriter,
-            IBuildSettingsProvider buildSettingsProvider, IExceptionThrowerProvider exceptionThrowerProvider)
+        public RoboRioConnection(IOutputWriter outputWriter,
+            IBuildSettingsProvider buildSettingsProvider, IExceptionThrowerProvider exceptionThrowerProvider,
+            ITeamNumberProvider teamNumberProvider)
         {
-            m_teamNumber = teamNumber;
-            m_sshTimeout = sshTimeout;
+            m_teamNumberProvider = teamNumberProvider;
+            m_sshTimeout = TimeSpan.FromSeconds(2);
             m_outputWriter = outputWriter;
             m_buildSettingsProvider = buildSettingsProvider;
             m_exceptionThrowerProvider = exceptionThrowerProvider;
+            m_remoteIp = null;
         }
-
+/*
         public static async Task<RoboRioConnection> StartConnectionTaskAsync(int teamNumber, IOutputWriter outputWriter,
             IBuildSettingsProvider buildSettingsProvider, IExceptionThrowerProvider exceptionThrowerProvider)
         {
@@ -91,27 +90,39 @@ namespace FRC.CLI.Common.Connections
             }
             return roboRioConnection;
         }
+        */
 
-        public bool CreateConnection()
+        private void CreateConnection()
         {
-            return AsyncContext.Run(async () =>
+            if (Connected)
             {
-                return await CreateConnectionAsync().ConfigureAwait(false);;
+                return;
+            }
+            AsyncContext.Run(async () =>
+            {
+                await CreateConnectionAsync().ConfigureAwait(false);;
             });
         }
 
-        public async Task<bool> CreateConnectionAsync()
+        private async Task CreateConnectionAsync()
         {
-            if (m_teamNumber < 0)
+            if (Connected)
+            {
+                return;
+            }
+
+            int teamNumber = await m_teamNumberProvider.GetTeamNumberAsync().ConfigureAwait(false);
+
+            if (teamNumber < 0)
             {
                 throw m_exceptionThrowerProvider.ThrowException("Team number cannot be less than 0");
             }
 
-            await m_outputWriter.WriteLineAsync($"Connecting to robot for team {m_teamNumber}").ConfigureAwait(false);
+            await m_outputWriter.WriteLineAsync($"Connecting to robot for team {teamNumber}").ConfigureAwait(false);
 
-            string roboRioMDNS = string.Format(RoboRioMdnsFormatString, m_teamNumber);
-            string roboRioLan = string.Format(RoboRioLanFormatString, m_teamNumber);
-            string roboRIOIP = string.Format(RoboRioIpFormatString, m_teamNumber / 100, m_teamNumber % 100);
+            string roboRioMDNS = string.Format(RoboRioMdnsFormatString, teamNumber);
+            string roboRioLan = string.Format(RoboRioLanFormatString, teamNumber);
+            string roboRIOIP = string.Format(RoboRioIpFormatString, teamNumber / 100, teamNumber % 100);
 
             bool verbose = m_buildSettingsProvider.Verbose;
             if (verbose)
@@ -147,9 +158,7 @@ namespace FRC.CLI.Common.Connections
 
                     if (finished == delayTask)
                     {
-                        if (verbose)
-                            await m_outputWriter.WriteLineAsync("Connection Timed Out");
-                        return false;
+                        throw m_exceptionThrowerProvider.ThrowException("Connection timed out");
                     }
                     else if (finished.IsCompleted && !finished.IsFaulted && !finished.IsCanceled)
                     {
@@ -174,9 +183,7 @@ namespace FRC.CLI.Common.Connections
                         else
                         {
                             // Error
-                            if (verbose)
-                                await m_outputWriter.WriteLineAsync("Unknown task returned");
-                            return false;
+                            throw m_exceptionThrowerProvider.ThrowException("Unknown task returned");
                         }
 
                         var ep = foundHost.Client.RemoteEndPoint;
@@ -194,21 +201,18 @@ namespace FRC.CLI.Common.Connections
                                 if (verbose)
                                     await m_outputWriter.WriteLineAsync($"Connected to IP Address {ipEp.Address}");
                                 m_remoteIp = ipEp.Address;
+                                return;
                             }
                             else 
                             {
-                                if (verbose)
-                                    await m_outputWriter.WriteLineAsync("Failed to complete all RoboRio connections");
+                                throw m_exceptionThrowerProvider.ThrowException("Failed to complete all RoboRio connections");
                             }
-                            return finishedConnect;
                         }
                     }
                     tasks.Remove(finished);
                 }
                 // If we have ever gotten here, return false
-                if (verbose)
-                    await m_outputWriter.WriteLineAsync("Ran out of tasks");
-                return false;
+                m_exceptionThrowerProvider.ThrowException("Ran out of tasks");
             }
         }
 
@@ -258,11 +262,11 @@ namespace FRC.CLI.Common.Connections
                 m_sshUserClient = new SshClient(m_lvUserConnectionInfo);
                 await Task.Run(() => m_sshUserClient.Connect()).ConfigureAwait(false);
             }
-            catch (SocketException e)
+            catch (SocketException)
             {
                 return false;
             }
-            catch (SshOperationTimeoutException e )
+            catch (SshOperationTimeoutException)
             {
                 return false;
             }
@@ -275,11 +279,11 @@ namespace FRC.CLI.Common.Connections
                 m_scpUserClient = new ScpClient(m_lvUserConnectionInfo);
                 await Task.Run(() => m_scpUserClient.Connect()).ConfigureAwait(false);
             }
-            catch (SocketException e)
+            catch (SocketException)
             {
                 return false;
             }
-            catch (SshOperationTimeoutException e)
+            catch (SshOperationTimeoutException)
             {
                 return false;
             }
@@ -323,6 +327,7 @@ namespace FRC.CLI.Common.Connections
 
         public bool DeployFiles(IEnumerable<string> files, string deployLocation, ConnectionUser user)
         {
+            CreateConnection();
             ScpClient scp;
             switch (user)
             {
@@ -350,6 +355,7 @@ namespace FRC.CLI.Common.Connections
 
         public async Task<bool> DeployFilesAsync(IEnumerable<string> files, string deployLocation, ConnectionUser user)
         {
+            await CreateConnectionAsync().ConfigureAwait(false);
             ScpClient scp;
             switch (user)
             {
@@ -377,6 +383,7 @@ namespace FRC.CLI.Common.Connections
 
         public bool ReceiveFile(string remoteFile, Stream receiveStream, ConnectionUser user)
         {
+            CreateConnection();
             ScpClient scp;
             switch (user)
             {
@@ -404,6 +411,10 @@ namespace FRC.CLI.Common.Connections
             {
                 scp.Download(remoteFile, receiveStream);
             }
+            catch (ScpException)
+            {
+                return false;
+            }
             catch (SshException)
             {
                 return false;
@@ -413,6 +424,7 @@ namespace FRC.CLI.Common.Connections
 
         public async Task<bool> ReceiveFileAsync(string remoteFile, Stream receiveStream, ConnectionUser user)
         {
+            await CreateConnectionAsync().ConfigureAwait(false);
             ScpClient scp;
             switch (user)
             {
@@ -438,17 +450,33 @@ namespace FRC.CLI.Common.Connections
             }
             try
             {
-                await Task.Run(() => scp.Download(remoteFile, receiveStream)).ConfigureAwait(false);
+                var ret = await Task.Run(() => 
+                {
+                    try
+                    {
+                        scp.Download(remoteFile, receiveStream);
+                        return true;
+                    }
+                    catch (ScpException)
+                    {
+                        return false;
+                    }
+                }).ConfigureAwait(false);
+                return ret;
+            }
+            catch (ScpException)
+            {
+                return false;
             }
             catch (SshException)
             {
                 return false;
             }
-            return true;
         }
 
         public Dictionary<string, SshCommand> RunCommands(IList<string> commands, ConnectionUser user)
         {
+            CreateConnection();
             SshClient ssh;
             switch (user)
             {
@@ -480,6 +508,7 @@ namespace FRC.CLI.Common.Connections
 
         public async Task<Dictionary<string, SshCommand>> RunCommandsAsync(IList<string> commands, ConnectionUser user)
         {
+            await CreateConnectionAsync().ConfigureAwait(false);
             SshClient ssh;
             switch (user)
             {
@@ -548,6 +577,18 @@ namespace FRC.CLI.Common.Connections
             Dispose(true);
             // TODO: uncomment the following line if the finalizer is overridden above.
             // GC.SuppressFinalize(this);
+        }
+
+        public async Task<IPAddress> GetConnectionIpAsync()
+        {
+            await CreateConnectionAsync().ConfigureAwait(false);
+            return m_remoteIp;
+        }
+
+        public IPAddress GetConnectionIp()
+        {
+            CreateConnection();
+            return m_remoteIp;
         }
         #endregion
 

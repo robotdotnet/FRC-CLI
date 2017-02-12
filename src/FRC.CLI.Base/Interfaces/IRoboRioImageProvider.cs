@@ -5,9 +5,9 @@ namespace FRC.CLI.Base.Interfaces
 {
     public interface IRoboRioImageProvider
     {
-        Task<bool> CheckCorrectImageAsync(IFileDeployerProvider fileDeployerProvider);
+        Task<bool> CheckCorrectImageAsync();
 
-        Task<string> GetCurrentRoboRioImageAsync(IFileDeployerProvider fileDeployerProvider);
+        Task<string> GetCurrentRoboRioImageAsync();
 
         Task<IList<string>> GetAllowedRoboRioImagesAsync();
     }
