@@ -34,22 +34,29 @@ namespace FRC.CLI.Common.Connections
         private ScpClient m_scpAdminClient;
 
         private IOutputWriter m_outputWriter;
+        private IBuildSettingsProvider m_buildSettingsProvider;
+        private IExceptionThrowerProvider m_exceptionThrowerProvider;
 
 
         public bool Connected => m_remoteIp != null;
 
         public IPAddress ConnectionIp => m_remoteIp;
 
-        public RoboRioConnection(int teamNumber, TimeSpan sshTimeout, IOutputWriter outputWriter)
+        public RoboRioConnection(int teamNumber, TimeSpan sshTimeout, IOutputWriter outputWriter,
+            IBuildSettingsProvider buildSettingsProvider, IExceptionThrowerProvider exceptionThrowerProvider)
         {
             m_teamNumber = teamNumber;
             m_sshTimeout = sshTimeout;
             m_outputWriter = outputWriter;
+            m_buildSettingsProvider = buildSettingsProvider;
+            m_exceptionThrowerProvider = exceptionThrowerProvider;
         }
 
-        public static async Task<RoboRioConnection> StartConnectionTaskAsync(int teamNumber, IOutputWriter outputWriter)
+        public static async Task<RoboRioConnection> StartConnectionTaskAsync(int teamNumber, IOutputWriter outputWriter,
+            IBuildSettingsProvider buildSettingsProvider, IExceptionThrowerProvider exceptionThrowerProvider)
         {
-            var roboRioConnection = new RoboRioConnection(teamNumber, TimeSpan.FromSeconds(2), outputWriter);
+            var roboRioConnection = new RoboRioConnection(teamNumber, TimeSpan.FromSeconds(2), outputWriter, buildSettingsProvider,
+                exceptionThrowerProvider);
             bool connected = await roboRioConnection.CreateConnectionAsync().ConfigureAwait(false);
             if (connected)
             {
@@ -65,9 +72,11 @@ namespace FRC.CLI.Common.Connections
             return roboRioConnection;
         }
 
-        public static RoboRioConnection StartConnectionTask(int teamNumber, IOutputWriter outputWriter)
+        public static RoboRioConnection StartConnectionTask(int teamNumber, IOutputWriter outputWriter,
+            IBuildSettingsProvider buildSettingsProvider, IExceptionThrowerProvider exceptionThrowerProvider)
         {
-            var roboRioConnection = new RoboRioConnection(teamNumber, TimeSpan.FromSeconds(2), outputWriter);
+            var roboRioConnection = new RoboRioConnection(teamNumber, TimeSpan.FromSeconds(2), outputWriter,
+                buildSettingsProvider, exceptionThrowerProvider);
             bool connected = roboRioConnection.CreateConnection();
             if (connected)
             {
@@ -93,15 +102,26 @@ namespace FRC.CLI.Common.Connections
 
         public async Task<bool> CreateConnectionAsync()
         {
-
             if (m_teamNumber < 0)
             {
-                throw new InvalidOperationException("Team number cannot be less than 0");
+                throw m_exceptionThrowerProvider.ThrowException("Team number cannot be less than 0");
             }
+
+            await m_outputWriter.WriteLineAsync($"Connecting to robot for team {m_teamNumber}").ConfigureAwait(false);
 
             string roboRioMDNS = string.Format(RoboRioMdnsFormatString, m_teamNumber);
             string roboRioLan = string.Format(RoboRioLanFormatString, m_teamNumber);
             string roboRIOIP = string.Format(RoboRioIpFormatString, m_teamNumber / 100, m_teamNumber % 100);
+
+            bool verbose = m_buildSettingsProvider.Verbose;
+            if (verbose)
+            {
+                await m_outputWriter.WriteLineAsync($"Connecting to the following IP Addresses:").ConfigureAwait(false);
+                await m_outputWriter.WriteLineAsync($"    {RoboRioUSBIp}").ConfigureAwait(false);
+                await m_outputWriter.WriteLineAsync($"    {roboRioMDNS}").ConfigureAwait(false);
+                await m_outputWriter.WriteLineAsync($"    {roboRioLan}").ConfigureAwait(false);
+                await m_outputWriter.WriteLineAsync($"    {roboRIOIP}").ConfigureAwait(false);
+            }
 
             using (TcpClient usbClient = new TcpClient())
             using (TcpClient mDnsClient = new TcpClient())
@@ -113,7 +133,7 @@ namespace FRC.CLI.Common.Connections
                 Task mDns = mDnsClient.ConnectAsync(roboRioMDNS, 80);
                 Task lan = lanClient.ConnectAsync(roboRioLan, 80);
                 Task ip = ipClient.ConnectAsync(roboRIOIP, 80);
-                Task delayTask = Task.Delay(10000);
+                Task delayTask = Task.Delay(m_sshTimeout);
 
                 // http://stackoverflow.com/questions/24441474/await-list-of-async-predicates-but-drop-out-on-first-false
                 List<Task> tasks = new List<Task>()
@@ -127,6 +147,8 @@ namespace FRC.CLI.Common.Connections
 
                     if (finished == delayTask)
                     {
+                        if (verbose)
+                            await m_outputWriter.WriteLineAsync("Connection Timed Out");
                         return false;
                     }
                     else if (finished.IsCompleted && !finished.IsFaulted && !finished.IsCanceled)
@@ -152,6 +174,8 @@ namespace FRC.CLI.Common.Connections
                         else
                         {
                             // Error
+                            if (verbose)
+                                await m_outputWriter.WriteLineAsync("Unknown task returned");
                             return false;
                         }
 
@@ -167,7 +191,14 @@ namespace FRC.CLI.Common.Connections
                             bool finishedConnect = await OnConnectionFound(ipEp.Address);
                             if (finishedConnect)
                             {
+                                if (verbose)
+                                    await m_outputWriter.WriteLineAsync($"Connected to IP Address {ipEp.Address}");
                                 m_remoteIp = ipEp.Address;
+                            }
+                            else 
+                            {
+                                if (verbose)
+                                    await m_outputWriter.WriteLineAsync("Failed to complete all RoboRio connections");
                             }
                             return finishedConnect;
                         }
@@ -175,6 +206,8 @@ namespace FRC.CLI.Common.Connections
                     tasks.Remove(finished);
                 }
                 // If we have ever gotten here, return false
+                if (verbose)
+                    await m_outputWriter.WriteLineAsync("Ran out of tasks");
                 return false;
             }
         }
@@ -216,6 +249,10 @@ namespace FRC.CLI.Common.Connections
 
             m_adminConnectionInfo = new ConnectionInfo(ip.ToString(), "admin", pauthAdmin, authMethodAdmin) { Timeout = m_sshTimeout };
 
+            bool verbose = m_buildSettingsProvider.Verbose;
+
+            if (verbose)
+                await m_outputWriter.WriteLineAsync("Creating lvuser ssh client");
             try
             {
                 m_sshUserClient = new SshClient(m_lvUserConnectionInfo);
@@ -229,6 +266,9 @@ namespace FRC.CLI.Common.Connections
             {
                 return false;
             }
+
+            if (verbose)
+                await m_outputWriter.WriteLineAsync("Creating lvuser scp client");
 
             try
             {
@@ -244,6 +284,9 @@ namespace FRC.CLI.Common.Connections
                 return false;
             }
 
+            if (verbose)
+                await m_outputWriter.WriteLineAsync("Creating admin ssh client");
+
             try
             {
                 m_sshAdminClient = new SshClient(m_adminConnectionInfo);
@@ -257,6 +300,9 @@ namespace FRC.CLI.Common.Connections
             {
                 return false;
             }
+
+            if (verbose)
+                await m_outputWriter.WriteLineAsync("Creating admin scp client");
 
             try
             {
@@ -290,7 +336,7 @@ namespace FRC.CLI.Common.Connections
                     throw new ArgumentOutOfRangeException(nameof(user), user, null);
             }
 
-            bool verbose = true;
+            bool verbose = m_buildSettingsProvider.Verbose;
             foreach (FileInfo fileInfo in from string s in files where File.Exists(s) select new FileInfo(s))
             {
                 if (verbose)
@@ -317,7 +363,7 @@ namespace FRC.CLI.Common.Connections
                     throw new ArgumentOutOfRangeException(nameof(user), user, null);
             }
 
-            bool verbose = true;
+            bool verbose = m_buildSettingsProvider.Verbose;
             foreach (FileInfo fileInfo in from string s in files where File.Exists(s) select new FileInfo(s))
             {
                 if (verbose)
@@ -349,7 +395,7 @@ namespace FRC.CLI.Common.Connections
                 return false;
             }
 
-            bool verbose = true;
+            bool verbose = m_buildSettingsProvider.Verbose;
             if (verbose)
             {
                 m_outputWriter.WriteLine($"Receiving File: {remoteFile}");
@@ -385,7 +431,7 @@ namespace FRC.CLI.Common.Connections
                 return false;
             }
 
-            bool verbose = true;
+            bool verbose = m_buildSettingsProvider.Verbose;
             if (verbose)
             {
                 await m_outputWriter.WriteLineAsync($"Receiving File: {remoteFile}").ConfigureAwait(false);
@@ -418,7 +464,7 @@ namespace FRC.CLI.Common.Connections
 
             Dictionary<string, SshCommand> retCommands = new Dictionary<string, SshCommand>();
 
-            bool verbose = true;
+            bool verbose = m_buildSettingsProvider.Verbose;
             foreach (string s in commands)
             {
                 if (verbose)
@@ -449,7 +495,7 @@ namespace FRC.CLI.Common.Connections
 
             Dictionary<string, SshCommand> retCommands = new Dictionary<string, SshCommand>();
 
-            bool verbose = true;
+            bool verbose = m_buildSettingsProvider.Verbose;
             foreach (string s in commands)
             {
                 if (verbose)

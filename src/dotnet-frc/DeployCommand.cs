@@ -10,6 +10,7 @@ using Nito.AsyncEx;
 using FRC.CLI.Base.Interfaces;
 using FRC.CLI.Common;
 using FRC.CLI.Common.Implementations;
+using Autofac;
 
 namespace dotnet_frc
 {
@@ -17,6 +18,7 @@ namespace dotnet_frc
     {
         private CommandOption _debugOption;
         private CommandOption _teamOption;
+        private CommandOption _verboseOption;
 
         public static DotNetSubCommandBase Create()
         {
@@ -40,14 +42,32 @@ namespace dotnet_frc
                 CommandOptionType.SingleValue
             );
 
+            command._verboseOption = command.Option(
+                "-v|--verbose <VERBOSE>",
+                "Verbose output",
+                CommandOptionType.NoValue
+            );
+
             return command;
         }
 
         public async Task RunDeployAsync(MsBuildProject buildProject)
         {
+            var builder = new ContainerBuilder();
+            builder.RegisterType<ConsoleWriter>().As<IOutputWriter>();
+            builder.RegisterType<DotNetExceptionThrowerProvider>().As<IExceptionThrowerProvider>();
+            builder.Register(c =>
+            {
+                return new DotNetProjectInformationProvider(buildProject);
+            }).As<IProjectInformationProvider>();
+            builder.RegisterType<JsonFrcSettingsProvider>().As<IFrcSettingsProvider>();
+            builder.Register(c => new DotNetBuildSettingsProvider(_debugOption.HasValue(), _verboseOption.HasValue())).As<IBuildSettingsProvider>();
+            var container = builder.Build();
+
+
             DotNetExceptionThrowerProvider dnExProvider = new DotNetExceptionThrowerProvider();
             DotNetProjectInformationProvider dnPjtProvider = new DotNetProjectInformationProvider(buildProject);
-            DotNetBuildSettingsProvider dnBsProvider = new DotNetBuildSettingsProvider(_debugOption.HasValue());
+            DotNetBuildSettingsProvider dnBsProvider = new DotNetBuildSettingsProvider(_debugOption.HasValue(), _verboseOption.HasValue());
             DotNetCodeBuilder dnCodeBuilder = new DotNetCodeBuilder(dnPjtProvider, dnBsProvider, dnExProvider);
             WPILibNativeDeploySettingsProvider wpiNativeDeployProvider = new WPILibNativeDeploySettingsProvider();
             
@@ -90,7 +110,7 @@ namespace dotnet_frc
                 }
             }
             
-            using (RoboRioConnection rioConn = await RoboRioConnection.StartConnectionTaskAsync(teamNumber, cWriter))
+            using (RoboRioConnection rioConn = await RoboRioConnection.StartConnectionTaskAsync(teamNumber, cWriter, dnBsProvider, dnExProvider))
             {
                 if (!rioConn.Connected)
                 {

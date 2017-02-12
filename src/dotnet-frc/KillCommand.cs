@@ -9,12 +9,15 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Nito.AsyncEx;
+using Autofac;
+using FRC.CLI.Base.Interfaces;
 
 namespace dotnet_frc
 {
     class KillCommand : DotNetSubCommandBase
     {
         private CommandOption _teamOption;
+        private CommandOption _verboseOption;
 
         public static DotNetSubCommandBase Create()
         {
@@ -32,48 +35,68 @@ namespace dotnet_frc
                 CommandOptionType.SingleValue
             );
 
+            command._verboseOption = command.Option(
+                "-v|--verbose <VERBOSE>",
+                "Verbose output",
+                CommandOptionType.NoValue
+            );
+
             return command;
         }
 
         public async Task<int> RunAsync(string fileOrDirectory)
         {
-            ConsoleWriter cWriter = new ConsoleWriter();
-
-            int teamNumber = -1;
-            bool parsed = false;
-            if (_teamOption.HasValue())
-            {
-                parsed = int.TryParse(_teamOption.Value(), out teamNumber);
-                if (!parsed)
-                {
-                    cWriter.WriteLine("Could not parse command line team number.");
-                }
-            }
-            if (!parsed)
+            var builder = new ContainerBuilder();
+            builder.RegisterType<ConsoleWriter>().As<IOutputWriter>();
+            builder.RegisterType<DotNetExceptionThrowerProvider>().As<IExceptionThrowerProvider>();
+            builder.Register(c =>
             {
                 MsBuildProject msBuild = MsBuildProject.FromFileOrDirectory(ProjectCollection.GlobalProjectCollection, fileOrDirectory);
-                DotNetExceptionThrowerProvider exProvider = new DotNetExceptionThrowerProvider();
-                DotNetProjectInformationProvider dnPjt = new DotNetProjectInformationProvider(msBuild);
-                JsonFrcSettingsProvider frcSettingsProvider = new JsonFrcSettingsProvider(exProvider, cWriter, 
-                    dnPjt);
+                return new DotNetProjectInformationProvider(msBuild);
+            }).As<IProjectInformationProvider>();
+            builder.RegisterType<JsonFrcSettingsProvider>().As<IFrcSettingsProvider>();
+            builder.Register(c => new DotNetBuildSettingsProvider(false, _verboseOption.HasValue())).As<IBuildSettingsProvider>();
+            var container = builder.Build();
 
-                 var frcSettings = await frcSettingsProvider.GetFrcSettingsAsync().ConfigureAwait(false);
-                if (frcSettings == null)
-                {
-                    throw exProvider.ThrowException("Could not find team number");
-                }
-                if (!int.TryParse(frcSettings.TeamNumber, out teamNumber))
-                {
-                    throw exProvider.ThrowException("Cannot parse team number from settings file");
-                } 
-            }
-            using (RoboRioConnection rioConn = await RoboRioConnection.StartConnectionTaskAsync(teamNumber, cWriter))
+            using (var scope = container.BeginLifetimeScope())
             {
-                if (!rioConn.Connected)
+                var cWriter = scope.Resolve<IOutputWriter>();
+                var exProvider = scope.Resolve<IExceptionThrowerProvider>();
+        
+                int teamNumber = -1;
+                bool parsed = false;
+                if (_teamOption.HasValue())
                 {
-                    throw new GracefulException("Could not connect to roboRio");
+                    parsed = int.TryParse(_teamOption.Value(), out teamNumber);
+                    if (!parsed)
+                    {
+                        cWriter.WriteLine("Could not parse command line team number.");
+                    }
                 }
-                await rioConn.RunCommandsAsync(new string[] { DeployProperties.KillOnlyCommand}, ConnectionUser.LvUser);
+                if (!parsed)
+                {
+                    
+                    var frcSettingsProvider = scope.Resolve<IFrcSettingsProvider>();
+                    var frcSettings = await frcSettingsProvider.GetFrcSettingsAsync().ConfigureAwait(false);
+                    if (frcSettings == null)
+                    {
+                        throw exProvider.ThrowException("Could not find team number");
+                    }
+                    if (!int.TryParse(frcSettings.TeamNumber, out teamNumber))
+                    {
+                        throw exProvider.ThrowException("Cannot parse team number from settings file");
+                    } 
+                }
+                var dnBs = scope.Resolve<IBuildSettingsProvider>();
+                
+                using (RoboRioConnection rioConn = await RoboRioConnection.StartConnectionTaskAsync(teamNumber, cWriter, dnBs, exProvider))
+                {
+                    if (!rioConn.Connected)
+                    {
+                        throw new GracefulException("Could not connect to roboRio");
+                    }
+                    await rioConn.RunCommandsAsync(new string[] { DeployProperties.KillOnlyCommand}, ConnectionUser.LvUser);
+                }
             }
 
             return 0;
