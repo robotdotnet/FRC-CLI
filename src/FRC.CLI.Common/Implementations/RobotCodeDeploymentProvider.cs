@@ -51,6 +51,8 @@ namespace FRC.CLI.Common.Implementations
         public async Task<bool> StartRobotCodeAsync()
         {
             bool debug = m_buildSettingsProvider.Debug;
+            // Force release until I can get debugging working properly
+            debug = true;
 
             await m_fileDeployerProvider.RunCommandsAsync(new string[] {DeployProperties.KillOnlyCommand}, ConnectionUser.LvUser).ConfigureAwait(false);
 
@@ -61,14 +63,16 @@ namespace FRC.CLI.Common.Implementations
             string deployedCmd;
             string deployedCmdFrame;
 
+            string ipAddress = (await m_fileDeployerProvider.GetConnectionIpAsync().ConfigureAwait(false))?.ToString();
+
             if (debug)
             {
-                deployedCmd = string.Format(DeployProperties.RobotCommandDebug, robotName);
+                deployedCmd = string.Format(DeployProperties.RobotCommandDebug, robotName, ipAddress);
                 deployedCmdFrame = DeployProperties.RobotCommandDebugFileName;
             }
             else
             {
-                deployedCmd = string.Format(DeployProperties.RobotCommand, robotName);
+                deployedCmd = string.Format(DeployProperties.RobotCommand, robotName, ipAddress);
                 deployedCmdFrame = DeployProperties.RobotCommandFileName;
             }
             
