@@ -31,10 +31,30 @@ namespace FRC.CLI.Common.Implementations
             {
                 return null;
             }
-            string json = await Task.Run(() => File.ReadAllText(settingsFile)).ConfigureAwait(false);
-            var settingsStore = await Task.Run(() => JsonConvert.DeserializeObject<FrcSettings>(json)).ConfigureAwait(false);
-            return settingsStore;
-            
+            string json = null;
+            try 
+            {
+                json = await Task.Run(() => File.ReadAllText(settingsFile)).ConfigureAwait(false);
+            }
+            catch (IOException)
+            {
+                // Locked file, failed to read
+                return null;
+            }
+            var deserializeSettings = new JsonSerializerSettings
+            {
+                MissingMemberHandling = MissingMemberHandling.Error
+            };
+            try
+            {
+                var settingsStore = await Task.Run(() => JsonConvert.DeserializeObject<FrcSettings>(json,
+                    deserializeSettings)).ConfigureAwait(false);
+                return settingsStore;
+            }
+            catch (JsonSerializationException)
+            {
+                return null;
+            }            
         }
 
         public async Task<bool> WriteFrcSettingsAsync(FrcSettings settings)
