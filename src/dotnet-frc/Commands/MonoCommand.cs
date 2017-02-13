@@ -1,7 +1,9 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Autofac;
 using FRC.CLI.Base.Interfaces;
+using FRC.CLI.Common;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 
@@ -54,13 +56,34 @@ namespace dotnet_frc
 
             using (var scope = container.BeginLifetimeScope())
             {
-            if (_downloadOption.HasValue())
-            {
+                bool downloaded = false;
                 var wpiLibFolder = await scope.Resolve<IWPILibUserFolderResolver>().GetWPILibUserFolderAsync().ConfigureAwait(false);
-                wpiLibFolder = Path.Combine(wpiLibFolder, "mono");
+                    wpiLibFolder = Path.Combine(wpiLibFolder, "mono");
                 var wpilibDownloadConstants = scope.Resolve<IMonoFileConstantsProvider>();
-                await scope.Resolve<IFileDownloadProvider>().DownloadFileAsync(wpilibDownloadConstants.Url, wpiLibFolder, wpilibDownloadConstants.Md5Sum).ConfigureAwait(false);
-            }
+                string downloadLocation = Path.Combine(wpiLibFolder, wpilibDownloadConstants.OutputFileName);
+                if (_downloadOption.HasValue())
+                {
+                    await scope.Resolve<IFileDownloadProvider>().DownloadFileAsync(wpilibDownloadConstants.Url, 
+                        wpiLibFolder, wpilibDownloadConstants.OutputFileName).ConfigureAwait(false);
+                    string sum = await MD5Helper.Md5SumAsync(downloadLocation).ConfigureAwait(false);
+                    if (sum == null || sum != wpilibDownloadConstants.Md5Sum)
+                    {
+                        throw scope.Resolve<IExceptionThrowerProvider>().ThrowException("File not downloaded properly");
+                    }
+                    await scope.Resolve<IOutputWriter>().WriteLineAsync("Successfully downloaded mono. Run with -i argument to deploy to robot");
+                    downloaded = true;
+                }
+                Console.WriteLine("Checking Installer");
+                if (_installOption.HasValue())
+                {
+                    Console.WriteLine("2");
+                    if (downloaded)
+                    {
+                        Console.WriteLine("3");
+                        // Downloaded previously. No need to check file. Just deploy it.
+                        await scope.Resolve<IRemotePackageInstallerProvider>().InstallZippedPackages(downloadLocation).ConfigureAwait(false);
+                    }
+                }
 
             }
 

@@ -32,6 +32,10 @@ namespace dotnet_frc
             builder.RegisterType<DotNetTeamNumberProvider>().As<ITeamNumberProvider>().WithParameter(new TypedParameter(typeof(int?), 
                 DotNetTeamNumberProvider.GetTeamNumberFromCommandOption(command._teamOption)));
             builder.Register(c => new DotNetBuildSettingsProvider(debug, verbose)).As<IBuildSettingsProvider>();    
+            builder.RegisterType<DotNetWPILibUserFolderResolver>().As<IWPILibUserFolderResolver>();
+            builder.RegisterType<HttpClientFileDownloadProvider>().As<IFileDownloadProvider>();
+            builder.RegisterType<MonoFileConstantsProvider>().As<IMonoFileConstantsProvider>();
+            builder.RegisterType<RemotePackageInstallerProvider>().As<IRemotePackageInstallerProvider>();
         }
     }
 }

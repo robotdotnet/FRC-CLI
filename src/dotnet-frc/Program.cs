@@ -20,7 +20,8 @@ namespace dotnet_frc
             {
                 DeployCommand.Create,
                 KillCommand.Create,
-                SettingsCommand.Create
+                SettingsCommand.Create,
+                MonoCommand.Create
             };
 
         public static int Run(string[] args)
