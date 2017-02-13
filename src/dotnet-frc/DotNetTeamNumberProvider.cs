@@ -30,7 +30,7 @@ namespace dotnet_frc
                 teamNumber = m_inputTeamNumber.Value;
                 if (teamNumber < 0)
                 {
-                    m_outputWriter.WriteLine("Entered team number is not valid. Attempting to read from settings file");
+                    await m_outputWriter.WriteLineAsync("Entered team number is not valid. Attempting to read from settings file").ConfigureAwait(false);
                 }
             }
             if (teamNumber < 0)

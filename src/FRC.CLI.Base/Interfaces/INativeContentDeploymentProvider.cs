@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 
 namespace FRC.CLI.Base.Interfaces
 {
-    public interface INativePackageDeploymentProvider
+    public interface INativeContentDeploymentProvider
     {
         string NativeDirectory { get; }
 
@@ -10,6 +10,6 @@ namespace FRC.CLI.Base.Interfaces
         /// Deploys native files to the robot
         /// </summary>
         /// <returns>True if the files were deployed successfully, otherwise false</returns>
-        Task<bool> DeployNativeFilesAsync();
+        Task<bool> DeployNativeContentAsync();
     }
 }

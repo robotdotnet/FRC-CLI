@@ -48,9 +48,5 @@ namespace FRC.CLI.Common
         public const string MonoVersion = "Mono4.2.1.zip";
 
         public const string MonoUrl = "https://dl.bintray.com/robotdotnet/Mono/";
-
-        public const string RoboRioOpgkLocation = "/home/admin/opkg";
-
-        public static readonly string OpkgInstallCommand = $"opkg install {RoboRioOpgkLocation}/*.ipk";
     }
 }

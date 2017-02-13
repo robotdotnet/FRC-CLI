@@ -12,14 +12,14 @@ namespace FRC.CLI.Common.Implementations
     {
         IOutputWriter m_outputWriter;
         IProjectInformationProvider m_projectInformationProvider;
-        INativePackageDeploymentProvider m_nativePackageDeploymentProvider;
+        INativeContentDeploymentProvider m_nativePackageDeploymentProvider;
         IBuildSettingsProvider m_buildSettingsProvider;
         IFrcSettingsProvider m_frcSettingsProvider;
         IFileDeployerProvider m_fileDeployerProvider;
 
         public RobotCodeDeploymentProvider(IOutputWriter outputWriter,
             IProjectInformationProvider projectInformationProvider,
-            INativePackageDeploymentProvider nativePackageDeploymentProvider,
+            INativeContentDeploymentProvider nativePackageDeploymentProvider,
             IBuildSettingsProvider buildSettingsProvider,
             IFrcSettingsProvider frcSettingsProvider,
             IFileDeployerProvider fileDeployerProvider)

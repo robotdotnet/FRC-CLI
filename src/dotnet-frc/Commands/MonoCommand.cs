@@ -73,7 +73,6 @@ namespace dotnet_frc
                     await scope.Resolve<IOutputWriter>().WriteLineAsync("Successfully downloaded mono. Run with -i argument to deploy to robot");
                     downloaded = true;
                 }
-                Console.WriteLine("Checking Installer");
                 if (_installOption.HasValue())
                 {
                     Console.WriteLine("2");
@@ -81,7 +80,7 @@ namespace dotnet_frc
                     {
                         Console.WriteLine("3");
                         // Downloaded previously. No need to check file. Just deploy it.
-                        await scope.Resolve<IRemotePackageInstallerProvider>().InstallZippedPackages(downloadLocation).ConfigureAwait(false);
+                        await scope.Resolve<IRemotePackageInstallerProvider>().InstallZippedPackagesAsync(downloadLocation).ConfigureAwait(false);
                     }
                 }
 

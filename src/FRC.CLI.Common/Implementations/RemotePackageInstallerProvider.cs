@@ -1,15 +1,17 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using FRC.CLI.Base.Enums;
 using FRC.CLI.Base.Interfaces;
-using Renci.SshNet;
 
 namespace FRC.CLI.Common.Implementations
 {
     public class RemotePackageInstallerProvider : IRemotePackageInstallerProvider
     {
+        public const string RoboRioOpgkLocation = "/home/admin/opkg";
+
+        public static readonly string OpkgInstallCommand = $"opkg install {RoboRioOpgkLocation}/*.ipk";
+
         IOutputWriter m_outputWriter;
         IFileDeployerProvider m_fileDeployerProvider;
         ITeamNumberProvider m_teamNumberProvider;
@@ -29,7 +31,7 @@ namespace FRC.CLI.Common.Implementations
             m_exceptionThrowerProvider = exceptionThrowerProvider;
         }
 
-        public async Task InstallZippedPackages(string localFile)
+        public async Task InstallZippedPackagesAsync(string localFile)
         {
             if (!File.Exists(localFile))
             {
@@ -37,7 +39,7 @@ namespace FRC.CLI.Common.Implementations
             }
 
 
-            await m_outputWriter.WriteLineAsync($"Deploying file: {localFile} to {DeployProperties.RoboRioOpgkLocation}").ConfigureAwait(false);
+            await m_outputWriter.WriteLineAsync($"Deploying file: {localFile} to {RoboRioOpgkLocation}").ConfigureAwait(false);
             
             bool verbose = m_buildSettingsProvider.Verbose;
 
@@ -46,10 +48,10 @@ namespace FRC.CLI.Common.Implementations
                 await m_outputWriter.WriteLineAsync("Creating Opkg Directory").ConfigureAwait(false);
             }
 
-            await m_fileDeployerProvider.RunCommandsAsync(new string[] {$"mkdir -p {DeployProperties.RoboRioOpgkLocation}"},
+            await m_fileDeployerProvider.RunCommandsAsync(new string[] {$"mkdir -p {RoboRioOpgkLocation}"},
                             ConnectionUser.Admin).ConfigureAwait(false);
             
-            var ret = await m_fileDeployerProvider.DeployFilesAsync(new string[] {localFile}, DeployProperties.RoboRioOpgkLocation,
+            var ret = await m_fileDeployerProvider.DeployFilesAsync(new string[] {localFile}, RoboRioOpgkLocation,
                             ConnectionUser.Admin).ConfigureAwait(false);
 
             if (!ret)
@@ -59,42 +61,25 @@ namespace FRC.CLI.Common.Implementations
 
             if (verbose)
             {
-                await m_outputWriter.WriteLineAsync("Installing mono").ConfigureAwait(false);
+                await m_outputWriter.WriteLineAsync("Installing Packages").ConfigureAwait(false);
             }
 
             List<string> installCommands = new List<string>()
             {
-                $"unzip {DeployProperties.RoboRioOpgkLocation}/{Path.GetFileName(localFile)} -d {DeployProperties.RoboRioOpgkLocation}",
-                DeployProperties.OpkgInstallCommand
+                $"unzip {RoboRioOpgkLocation}/{Path.GetFileName(localFile)} -d {RoboRioOpgkLocation}",
+                OpkgInstallCommand
             };
 
             await m_fileDeployerProvider.RunCommandsAsync(installCommands, ConnectionUser.Admin);
 
-            // Check mono install
-            string checkString = $"test -e {DeployProperties.RoboRioMonoBin}";
-            var retVal = await m_fileDeployerProvider.RunCommandsAsync(new string[] {checkString}, ConnectionUser.LvUser).ConfigureAwait(false);
-            SshCommand command;
-            if (retVal.TryGetValue(checkString, out command))
-            {
-                if (command.ExitStatus != 0)
-                {
-                    throw m_exceptionThrowerProvider.ThrowException("Mono did not install successfully. Please try again");
-                }
-            }
-            else
-            {
-                throw m_exceptionThrowerProvider.ThrowException("Failed to deploy");
-            }
-
-            // Set allow realtime on Mono instance
-            await m_fileDeployerProvider.RunCommandsAsync(new string[] {"setcap cap_sys_nice=pe /usr/bin/mono-sgen"},
-                ConnectionUser.Admin).ConfigureAwait(false);
-
             //Removing ipk files from the RoboRIO
-            await m_fileDeployerProvider.RunCommandsAsync(new string[] {$"rm -rf {DeployProperties.RoboRioOpgkLocation}"},
+            await m_fileDeployerProvider.RunCommandsAsync(new string[] {$"rm -rf {RoboRioOpgkLocation}"},
                 ConnectionUser.Admin).ConfigureAwait(false);
 
-            await m_outputWriter.WriteLineAsync("Done. you may now deploy code to your robot.");
+            if (verbose)
+            {
+                await m_outputWriter.WriteLineAsync($"Finished deploying package {localFile}").ConfigureAwait(false);
+            }
         }
     }
 }

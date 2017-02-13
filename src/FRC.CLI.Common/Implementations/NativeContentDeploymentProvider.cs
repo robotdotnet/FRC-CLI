@@ -7,7 +7,7 @@ using FRC.CLI.Base.Interfaces;
 
 namespace FRC.CLI.Common.Implementations
 {
-    public class NativePackageDeploymentProvider : INativePackageDeploymentProvider
+    public class NativeContentDeploymentProvider : INativeContentDeploymentProvider
     {
         IWPILibNativeDeploySettingsProvider m_wpilibNativeDeploySettingsProvider;
         IProjectInformationProvider m_projectInformationProvider;
@@ -16,7 +16,7 @@ namespace FRC.CLI.Common.Implementations
 
         public string NativeDirectory => "wpinative";
 
-        public NativePackageDeploymentProvider(IWPILibNativeDeploySettingsProvider wpilibNativeDeploySettingsProvider,
+        public NativeContentDeploymentProvider(IWPILibNativeDeploySettingsProvider wpilibNativeDeploySettingsProvider,
             IProjectInformationProvider projectInformationProvider, IExceptionThrowerProvider exceptionThrowerProvider,
             IFileDeployerProvider fileDeployerProvider)
         {
@@ -26,7 +26,7 @@ namespace FRC.CLI.Common.Implementations
             m_fileDeployerProvider = fileDeployerProvider;
         }
 
-        public async Task<bool> DeployNativeFilesAsync()
+        public async Task<bool> DeployNativeContentAsync()
         {
             MemoryStream memStream = new MemoryStream();
             bool readFile = await m_fileDeployerProvider.ReceiveFileAsync(

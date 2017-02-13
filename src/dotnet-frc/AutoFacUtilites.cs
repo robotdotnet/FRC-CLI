@@ -20,7 +20,7 @@ namespace dotnet_frc
             builder.RegisterType<RoboRioDependencyCheckerProvider>().As<IRoboRioDependencyCheckerProvider>();
             builder.RegisterType<RoboRioImageProvider>().As<IRoboRioImageProvider>();
             builder.RegisterType<WPILibImageSettingsProvider>().As<IWPILibImageSettingsProvider>();
-            builder.RegisterType<NativePackageDeploymentProvider>().As<INativePackageDeploymentProvider>();
+            builder.RegisterType<NativeContentDeploymentProvider>().As<INativeContentDeploymentProvider>();
             builder.RegisterType<WPILibNativeDeploySettingsProvider>().As<IWPILibNativeDeploySettingsProvider>();
             builder.RegisterType<DotNetCodeBuilder>().As<ICodeBuilderProvider>();
             builder.RegisterType<RoboRioConnection>().As<IFileDeployerProvider>().InstancePerLifetimeScope();

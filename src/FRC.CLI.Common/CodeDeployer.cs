@@ -11,13 +11,13 @@ namespace FRC.CLI.Common
         private IOutputWriter m_outputWriter;
         private IRoboRioDependencyCheckerProvider m_roboRioDependencyCheckerProvider;
         private IRobotCodeDeploymentProvider m_robotCodeDeploymentProvider;
-        private INativePackageDeploymentProvider m_nativePackageDeploymentProvider;
+        private INativeContentDeploymentProvider m_nativePackageDeploymentProvider;
 
         public CodeDeployer(ICodeBuilderProvider codeBuilderProvider, IExceptionThrowerProvider exceptionThrowerProvider,
             IRoboRioImageProvider roboRioImageProvider, IOutputWriter outputWriter,
             IRoboRioDependencyCheckerProvider roboRioDependencyCheckerProvider,
             IRobotCodeDeploymentProvider robotCodeDeploymentProvider,
-            INativePackageDeploymentProvider nativePackageDeploymentProvider)
+            INativeContentDeploymentProvider nativePackageDeploymentProvider)
         {
             m_codeBuilderProvider = codeBuilderProvider;
             m_exceptionThrowerProvider = exceptionThrowerProvider;
@@ -49,7 +49,7 @@ namespace FRC.CLI.Common
             }
 
 
-            if (!await m_nativePackageDeploymentProvider.DeployNativeFilesAsync().ConfigureAwait(false))
+            if (!await m_nativePackageDeploymentProvider.DeployNativeContentAsync().ConfigureAwait(false))
             {
                 throw m_exceptionThrowerProvider.ThrowException("Could not deploy native files");
             }
