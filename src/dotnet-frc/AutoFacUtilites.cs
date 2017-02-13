@@ -10,7 +10,7 @@ namespace dotnet_frc
     internal static class AutoFacUtilites
     {
         public static void AddCommonServicesToContainer(ContainerBuilder builder, string fileOrDirectory,
-            FrcSubCommandBase command)
+            FrcSubCommandBase command, bool debug, bool verbose)
         {
             builder.RegisterType<ConsoleWriter>().As<IOutputWriter>();
             builder.RegisterType<DotNetExceptionThrowerProvider>().As<IExceptionThrowerProvider>();
@@ -31,6 +31,7 @@ namespace dotnet_frc
             }).As<IProjectInformationProvider>();
             builder.RegisterType<DotNetTeamNumberProvider>().As<ITeamNumberProvider>().WithParameter(new TypedParameter(typeof(int?), 
                 DotNetTeamNumberProvider.GetTeamNumberFromCommandOption(command._teamOption)));
+            builder.Register(c => new DotNetBuildSettingsProvider(debug, verbose)).As<IBuildSettingsProvider>();    
         }
     }
 }

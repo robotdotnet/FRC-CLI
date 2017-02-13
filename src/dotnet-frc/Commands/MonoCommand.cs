@@ -37,7 +37,7 @@ namespace dotnet_frc
             );
 
             command._locationOption = command.Option(
-                "-l|--location <>",
+                "-l|--location",
                 "Local mono location",
                 CommandOptionType.SingleValue
             );
@@ -48,10 +48,8 @@ namespace dotnet_frc
         public override async Task<int> RunAsync(string fileOrDirectory)
         {
             var builder = new ContainerBuilder();
-            AutoFacUtilites.AddCommonServicesToContainer(builder, fileOrDirectory, this);
-            
-            builder.Register(c => new DotNetBuildSettingsProvider(false, _verboseOption.HasValue())).As<IBuildSettingsProvider>();
-            
+            AutoFacUtilites.AddCommonServicesToContainer(builder, fileOrDirectory, this,
+                false, _verboseOption.HasValue());            
             var container = builder.Build();
 
             using (var scope = container.BeginLifetimeScope())

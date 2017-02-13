@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using FRC.CLI.Base.Interfaces;
@@ -30,10 +31,24 @@ namespace FRC.CLI.Common.Implementations
             {
                 return null;
             }
-            string json = File.ReadAllText(settingsFile);
+            string json = await Task.Run(() => File.ReadAllText(settingsFile)).ConfigureAwait(false);
             var settingsStore = await Task.Run(() => JsonConvert.DeserializeObject<FrcSettings>(json)).ConfigureAwait(false);
             return settingsStore;
             
+        }
+
+        public async Task<bool> WriteFrcSettingsAsync(FrcSettings settings)
+        {
+            string serialized = await Task.Run(() => JsonConvert.SerializeObject(settings, 
+                Formatting.Indented)).ConfigureAwait(false);
+            if (string.IsNullOrEmpty(serialized))
+            {
+                return false;
+            }
+            string projectDirectory = await m_projectInformationProvider.GetProjectRootDirectoryAsync().ConfigureAwait(false);
+            string settingsFile = Path.Combine(projectDirectory, SettingsJsonFileName);
+            await Task.Run(() => File.WriteAllText(settingsFile, serialized)).ConfigureAwait(false);
+            return true;
         }
     }
 }

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using FRC.CLI.Base.Enums;
 using FRC.CLI.Base.Interfaces;
@@ -33,13 +34,16 @@ namespace FRC.CLI.Common.Implementations
 
         public async Task<bool> DeployRobotCodeAsync()
         {
-            
-            
             string buildDir = await m_projectInformationProvider.GetProjectBuildDirectoryAsync().ConfigureAwait(false);
             string nativeDir = Path.Combine(buildDir, m_nativePackageDeploymentProvider.NativeDirectory);
             await m_outputWriter.WriteLineAsync("Creating Mono Deploy Directory").ConfigureAwait(false);
             await m_fileDeployerProvider.RunCommandsAsync(new string[] {$"mkdir -p {DeployProperties.DeployDir}"}, ConnectionUser.LvUser).ConfigureAwait(false);
-            var files = Directory.GetFiles(buildDir).Where(x => !x.Contains(nativeDir)).Where(f => !DeployProperties.IgnoreFiles.Any(f.Contains));
+            List<string> ignoreFiles = (await m_frcSettingsProvider.GetFrcSettingsAsync()
+                .ConfigureAwait(false))
+                ?.DeployIgnoreFiles;
+            var files = Directory.GetFiles(buildDir).Where(x => !x.Contains(nativeDir))
+                                                    .Where(f => !DeployProperties.IgnoreFiles.Any(f.Contains))
+                                                    .Where(f => !ignoreFiles.Any(f.Contains));
             await m_outputWriter.WriteLineAsync("Deploying robot files").ConfigureAwait(false);
             return await m_fileDeployerProvider.DeployFilesAsync(files, DeployProperties.DeployDir, ConnectionUser.LvUser);
         }
@@ -67,9 +71,24 @@ namespace FRC.CLI.Common.Implementations
                 deployedCmd = string.Format(DeployProperties.RobotCommand, robotName);
                 deployedCmdFrame = DeployProperties.RobotCommandFileName;
             }
+            
+            List<string> requestedArguments = (await m_frcSettingsProvider.GetFrcSettingsAsync()
+                .ConfigureAwait(false))
+                ?.CommandLineArguments;
+            string args = "";
+            if (requestedArguments != null)
+            {
+                StringBuilder builder = new StringBuilder();
+                foreach(var arg in requestedArguments)
+                {
+                    builder.Append(arg);
+                    builder.Append(" ");
+                }
+                args = builder.ToString();
+            }
 
             //Write the robotCommand file
-            commands.Add($"echo {deployedCmd} > {DeployProperties.CommandDir}/{deployedCmdFrame}");
+            commands.Add($"echo {deployedCmd} {args} > {DeployProperties.CommandDir}/{deployedCmdFrame}");
             if (debug)
             {
                 //If debug write the debug flag.

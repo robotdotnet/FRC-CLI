@@ -34,7 +34,8 @@ namespace FRC.CLI.Common
 
         public const string CommandDir = "/home/lvuser";
 
-        public const string RobotCommandDebug = "env LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/frc/lib mono --debug \"" + DeployDir + "/{0}\"";
+        public const string RobotCommandDebug = "env LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/frc/lib mono"
+            + " --debug --debug --debugger-agent=transport=dt_socket,server=y,address=127.0.0.1:55555 \"" + DeployDir + "/{0}\"";
 
         public const string RobotCommandDebugFileName = "robotDebugCommand";
 
