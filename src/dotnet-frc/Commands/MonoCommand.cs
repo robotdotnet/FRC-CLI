@@ -75,15 +75,42 @@ namespace dotnet_frc
                 }
                 if (_installOption.HasValue())
                 {
-                    Console.WriteLine("2");
                     if (downloaded)
                     {
-                        Console.WriteLine("3");
                         // Downloaded previously. No need to check file. Just deploy it.
                         await scope.Resolve<IRemotePackageInstallerProvider>().InstallZippedPackagesAsync(downloadLocation).ConfigureAwait(false);
                     }
+                    else
+                    {
+                        // Check for existing file
+                        string sum = await MD5Helper.Md5SumAsync(downloadLocation).ConfigureAwait(false);
+                        if (sum == null || sum != wpilibDownloadConstants.Md5Sum)
+                        {
+                            // No file
+                            if (_locationOption.HasValue())
+                            {
+                                sum = await MD5Helper.Md5SumAsync(_locationOption.Value()).ConfigureAwait(false);
+                                if (sum == null || sum != wpilibDownloadConstants.Md5Sum)
+                                {
+                                    throw scope.Resolve<IExceptionThrowerProvider>().ThrowException("Passed in file could not be found or doesn't match sum");
+                                }
+                                else
+                                {
+                                    await scope.Resolve<IRemotePackageInstallerProvider>().InstallZippedPackagesAsync(_locationOption.Value()).ConfigureAwait(false);
+                                }
+                            }
+                            else
+                            {
+                                throw scope.Resolve<IExceptionThrowerProvider>().ThrowException("Could not find file to deploy");
+                            }
+                        }
+                        else 
+                        {
+                            // File exists. Deploy it
+                            await scope.Resolve<IRemotePackageInstallerProvider>().InstallZippedPackagesAsync(downloadLocation).ConfigureAwait(false);
+                        }
+                    }
                 }
-
             }
 
             return 0;

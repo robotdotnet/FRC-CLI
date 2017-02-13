@@ -14,6 +14,7 @@ namespace dotnet_frc.Commands
     {
         CommandOption _ignoreCommand;
         CommandOption _argumentCommand;
+        CommandOption _updateArgument;
 
         public static DotNetSubCommandBase Create()
         {
@@ -35,6 +36,12 @@ namespace dotnet_frc.Commands
                 CommandOptionType.MultipleValue
             );
 
+            command._updateArgument = command.Option(
+                "-u|--update",
+                "Updates tool to latest version",
+                CommandOptionType.NoValue
+            );
+
             SetupBaseOptions(command);
             
             command._teamOption.Description = 
@@ -52,6 +59,11 @@ namespace dotnet_frc.Commands
 
             using (var scope = container.BeginLifetimeScope())
             {
+                if (_updateArgument.HasValue())
+                {
+                    
+                }
+
                 var settingsProvider = scope.Resolve<IFrcSettingsProvider>();
                 FrcSettings currentSettings = await settingsProvider.GetFrcSettingsAsync().ConfigureAwait(false);
                 if (currentSettings == null)
@@ -88,7 +100,6 @@ namespace dotnet_frc.Commands
 
                 if (!await settingsProvider.WriteFrcSettingsAsync(currentSettings).ConfigureAwait(false))
                 {
-                    
                     throw scope.Resolve<IExceptionThrowerProvider>().ThrowException("Failed to write settings file"); 
                 }
             }

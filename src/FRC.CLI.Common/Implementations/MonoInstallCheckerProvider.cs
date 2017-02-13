@@ -17,7 +17,7 @@ namespace FRC.CLI.Common.Implementations
 
         public async Task<bool> CheckMonoInstallAsync()
         {
-                   string checkString = $"test -e {DeployProperties.RoboRioMonoBin}";
+            string checkString = $"test -e {DeployProperties.RoboRioMonoBin}";
             var retVal = await m_fileDeployerProvider.RunCommandsAsync(new string[] {checkString}, ConnectionUser.LvUser).ConfigureAwait(false);
             SshCommand command;
             if (retVal.TryGetValue(checkString, out command))

@@ -13,7 +13,6 @@ namespace dotnet_frc
             FrcSubCommandBase command, bool debug, bool verbose)
         {
             builder.RegisterType<ConsoleWriter>().As<IOutputWriter>();
-            builder.RegisterType<DotNetExceptionThrowerProvider>().As<IExceptionThrowerProvider>();
             builder.RegisterType<JsonFrcSettingsProvider>().As<IFrcSettingsProvider>();
             builder.RegisterType<CodeDeployer>();
             builder.RegisterType<RobotCodeDeploymentProvider>().As<IRobotCodeDeploymentProvider>();
