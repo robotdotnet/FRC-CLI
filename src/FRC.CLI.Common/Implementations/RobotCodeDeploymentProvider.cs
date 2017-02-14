@@ -67,7 +67,7 @@ namespace FRC.CLI.Common.Implementations
             await m_outputWriter.WriteLineAsync("Starting robot code").ConfigureAwait(false);
             bool debug = m_buildSettingsProvider.Debug;
             // Force release until I can get debugging working properly
-            debug = true;
+            debug = false;
 
             // Run kill command to ensure that no code issues happen
             // Ignore output, as this failing is not a big issue.

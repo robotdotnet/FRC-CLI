@@ -28,7 +28,10 @@ namespace FRC.CLI.Common.Implementations
         public async Task<FrcSettings> GetFrcSettingsAsync()
         {
             bool verbose = m_buildSettingsProvider.Verbose;
-            await m_outputWriter.WriteLineAsync("Getting FRC Settings File").ConfigureAwait(false);
+            if (verbose)
+            {
+                await m_outputWriter.WriteLineAsync("Getting FRC Settings File").ConfigureAwait(false);
+            }
             string projectDirectory = await m_projectInformationProvider.GetProjectRootDirectoryAsync().ConfigureAwait(false);
             string settingsFile = Path.Combine(projectDirectory, SettingsJsonFileName);
             if (!File.Exists(settingsFile))
@@ -61,7 +64,10 @@ namespace FRC.CLI.Common.Implementations
             {
                 var settingsStore = await Task.Run(() => JsonConvert.DeserializeObject<FrcSettings>(json,
                     deserializeSettings)).ConfigureAwait(false);
-                await m_outputWriter.WriteLineAsync("Successfully read settings file").ConfigureAwait(false);
+                if (verbose)
+                {
+                    await m_outputWriter.WriteLineAsync("Successfully read settings file").ConfigureAwait(false);
+                }
                 return settingsStore;
             }
             catch (JsonSerializationException)

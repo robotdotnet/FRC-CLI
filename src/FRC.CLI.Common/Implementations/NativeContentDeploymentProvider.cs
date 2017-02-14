@@ -84,9 +84,10 @@ namespace FRC.CLI.Common.Implementations
             if (foundError || readCount != fileMd5List.Count)
             {
                 await DeployNativeLibrariesAsync(fileMd5List).ConfigureAwait(false);
+                await m_outputWriter.WriteLineAsync("Successfully deployed native files").ConfigureAwait(false);
             }
 
-            await m_outputWriter.WriteLineAsync("Successfully deployed native files").ConfigureAwait(false);
+            await m_outputWriter.WriteLineAsync("Native libraries already exist. Skipping").ConfigureAwait(false);
         }
 
         public async Task<List<Tuple<string, string>>> GetMd5ForFilesAsync(string fileLocation, IList<string> ignoreFiles)

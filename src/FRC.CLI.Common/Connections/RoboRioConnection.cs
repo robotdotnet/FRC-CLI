@@ -157,8 +157,7 @@ namespace FRC.CLI.Common.Connections
                             bool finishedConnect = await OnConnectionFound(ipEp.Address);
                             if (finishedConnect)
                             {
-                                if (verbose)
-                                    await m_outputWriter.WriteLineAsync($"Connected to IP Address {ipEp.Address}");
+                                await m_outputWriter.WriteLineAsync($"Connected to robot at IP Address: {ipEp.Address}");
                                 m_remoteIp = ipEp.Address;
                                 return;
                             }
@@ -171,7 +170,7 @@ namespace FRC.CLI.Common.Connections
                     tasks.Remove(finished);
                 }
                 // If we have ever gotten here, return false
-                m_exceptionThrowerProvider.ThrowException("Ran out of tasks");
+                throw m_exceptionThrowerProvider.ThrowException("Ran out of tasks");
             }
         }
 
