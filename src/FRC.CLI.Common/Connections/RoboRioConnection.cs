@@ -50,47 +50,6 @@ namespace FRC.CLI.Common.Connections
             m_exceptionThrowerProvider = exceptionThrowerProvider;
             m_remoteIp = null;
         }
-/*
-        public static async Task<RoboRioConnection> StartConnectionTaskAsync(int teamNumber, IOutputWriter outputWriter,
-            IBuildSettingsProvider buildSettingsProvider, IExceptionThrowerProvider exceptionThrowerProvider)
-        {
-            var roboRioConnection = new RoboRioConnection(teamNumber, TimeSpan.FromSeconds(2), outputWriter, buildSettingsProvider,
-                exceptionThrowerProvider);
-            bool connected = await roboRioConnection.CreateConnectionAsync().ConfigureAwait(false);
-            if (connected)
-            {
-                StringBuilder builder = new StringBuilder();
-                builder.AppendLine("Connected to roboRIO...");
-                builder.AppendLine($"IP Address: {roboRioConnection.ConnectionIp.ToString()}");
-                await outputWriter.WriteLineAsync(builder.ToString()).ConfigureAwait(false);
-            }
-            else
-            {
-                await outputWriter.WriteLineAsync("Failed to connect to roboRIO...").ConfigureAwait(false);
-            }
-            return roboRioConnection;
-        }
-
-        public static RoboRioConnection StartConnectionTask(int teamNumber, IOutputWriter outputWriter,
-            IBuildSettingsProvider buildSettingsProvider, IExceptionThrowerProvider exceptionThrowerProvider)
-        {
-            var roboRioConnection = new RoboRioConnection(teamNumber, TimeSpan.FromSeconds(2), outputWriter,
-                buildSettingsProvider, exceptionThrowerProvider);
-            bool connected = roboRioConnection.CreateConnection();
-            if (connected)
-            {
-                StringBuilder builder = new StringBuilder();
-                builder.AppendLine("Connected to roboRIO...");
-                builder.AppendLine($"IP Address: {roboRioConnection.ConnectionIp.ToString()}");
-                outputWriter.WriteLine(builder.ToString());
-            }
-            else
-            {
-                outputWriter.WriteLine("Failed to connect to roboRIO...");
-            }
-            return roboRioConnection;
-        }
-        */
 
         private void CreateConnection()
         {
@@ -325,34 +284,6 @@ namespace FRC.CLI.Common.Connections
             return true;
         }
 
-        public bool DeployFiles(IEnumerable<string> files, string deployLocation, ConnectionUser user)
-        {
-            CreateConnection();
-            ScpClient scp;
-            switch (user)
-            {
-                case ConnectionUser.Admin:
-                    scp = m_scpAdminClient;
-                    break;
-                case ConnectionUser.LvUser:
-                    scp = m_scpUserClient;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(user), user, null);
-            }
-
-            bool verbose = m_buildSettingsProvider.Verbose;
-            foreach (FileInfo fileInfo in from string s in files where File.Exists(s) select new FileInfo(s))
-            {
-                if (verbose)
-                {
-                    m_outputWriter.WriteLine($"Deploying File: {fileInfo.Name}");
-                }
-                scp.Upload(fileInfo, deployLocation);
-            }
-            return true;
-        }
-
         public async Task<bool> DeployFilesAsync(IEnumerable<string> files, string deployLocation, ConnectionUser user)
         {
             await CreateConnectionAsync().ConfigureAwait(false);
@@ -377,47 +308,6 @@ namespace FRC.CLI.Common.Connections
                     await m_outputWriter.WriteLineAsync($"Deploying File: {fileInfo.Name}").ConfigureAwait(false);
                 }
                 await Task.Run(() => scp.Upload(fileInfo, deployLocation)).ConfigureAwait(false);
-            }
-            return true;
-        }
-
-        public bool ReceiveFile(string remoteFile, Stream receiveStream, ConnectionUser user)
-        {
-            CreateConnection();
-            ScpClient scp;
-            switch (user)
-            {
-                case ConnectionUser.Admin:
-                    scp = m_scpAdminClient;
-                    break;
-                case ConnectionUser.LvUser:
-                    scp = m_scpUserClient;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(user), user, null);
-            }
-
-            if (receiveStream == null || !receiveStream.CanWrite)
-            {
-                return false;
-            }
-
-            bool verbose = m_buildSettingsProvider.Verbose;
-            if (verbose)
-            {
-                m_outputWriter.WriteLine($"Receiving File: {remoteFile}");
-            }
-            try
-            {
-                scp.Download(remoteFile, receiveStream);
-            }
-            catch (ScpException)
-            {
-                return false;
-            }
-            catch (SshException)
-            {
-                return false;
             }
             return true;
         }
@@ -474,38 +364,6 @@ namespace FRC.CLI.Common.Connections
             }
         }
 
-        public Dictionary<string, SshCommand> RunCommands(IList<string> commands, ConnectionUser user)
-        {
-            CreateConnection();
-            SshClient ssh;
-            switch (user)
-            {
-                case ConnectionUser.Admin:
-                    ssh = m_sshAdminClient;
-                    break;
-                case ConnectionUser.LvUser:
-                    ssh = m_sshUserClient;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(user), user, null);
-            }
-
-            Dictionary<string, SshCommand> retCommands = new Dictionary<string, SshCommand>();
-
-            bool verbose = m_buildSettingsProvider.Verbose;
-            foreach (string s in commands)
-            {
-                if (verbose)
-                {
-                    m_outputWriter.WriteLine($"Running command: {s}");
-                }
-                var x = ssh.RunCommand(s);
-
-                retCommands.Add(s, x);
-            }
-            return retCommands;
-        }
-
         public async Task<Dictionary<string, SshCommand>> RunCommandsAsync(IList<string> commands, ConnectionUser user)
         {
             await CreateConnectionAsync().ConfigureAwait(false);
@@ -540,6 +398,37 @@ namespace FRC.CLI.Common.Connections
             }
             return retCommands;
         }
+
+        public async Task<SshCommand> RunCommandAsync(string command, ConnectionUser user)
+        {
+            await CreateConnectionAsync().ConfigureAwait(false);
+            SshClient ssh;
+            switch (user)
+            {
+                case ConnectionUser.Admin:
+                    ssh = m_sshAdminClient;
+                    break;
+                case ConnectionUser.LvUser:
+                    ssh = m_sshUserClient;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(user), user, null);
+            }
+
+            Dictionary<string, SshCommand> retCommands = new Dictionary<string, SshCommand>();
+
+            bool verbose = m_buildSettingsProvider.Verbose;
+            if (verbose)
+            {
+                await m_outputWriter.WriteLineAsync($"Running command: {command}").ConfigureAwait(false);
+            }
+            return await Task.Run(() =>
+            {
+                var x = ssh.RunCommand(command);
+                return x;
+            }).ConfigureAwait(false);
+        }
+
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls

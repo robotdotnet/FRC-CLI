@@ -5,16 +5,23 @@ namespace FRC.CLI.Common.Implementations
 {
     public class RoboRioDependencyCheckerProvider : IRoboRioDependencyCheckerProvider
     {
-        private IMonoInstallCheckerProvider m_monoInstallCheckerProvider;
-        public RoboRioDependencyCheckerProvider(IMonoInstallCheckerProvider monoInstallCheckerProvider)
+        private IRuntimeProvider m_runtimeProvider;
+        private IOutputWriter m_outputWriter;
+
+        public RoboRioDependencyCheckerProvider(IRuntimeProvider runtimeProvider,
+            IOutputWriter outputWriter)
         {
-            m_monoInstallCheckerProvider = monoInstallCheckerProvider;
+            m_runtimeProvider = runtimeProvider;
+            m_outputWriter = outputWriter;
         }
 
-        public async Task<bool> CheckIfDependenciesAreSatisfied()
+        public async Task CheckIfDependenciesAreSatisfiedAsync()
         {
+            await m_outputWriter.WriteLineAsync("Checking dependencies").ConfigureAwait(false);
             // Check mono install
-            return await m_monoInstallCheckerProvider.CheckMonoInstallAsync().ConfigureAwait(false);
+            await m_runtimeProvider.VerifyRuntimeAsync().ConfigureAwait(false);
+
+            await m_outputWriter.WriteLineAsync("All dependencies satisfied").ConfigureAwait(false);
         }
     }
 }

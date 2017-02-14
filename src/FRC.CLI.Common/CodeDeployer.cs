@@ -32,41 +32,21 @@ namespace FRC.CLI.Common
         public async Task DeployCode()
         {                
             // Build code
-            if (!await m_codeBuilderProvider.BuildCodeAsync().ConfigureAwait(false))
-            {
-                throw m_exceptionThrowerProvider.ThrowException("Could not build code");
-            }
+            await m_codeBuilderProvider.BuildCodeAsync().ConfigureAwait(false);
 
             // Check image
-            if (!await m_roboRioImageProvider.CheckCorrectImageAsync().ConfigureAwait(false))
-            {
-                throw m_exceptionThrowerProvider.ThrowException("RoboRio image not correct");
-            }
+            await m_roboRioImageProvider.CheckCorrectImageAsync().ConfigureAwait(false);
 
-            if (!await m_roboRioDependencyCheckerProvider.CheckIfDependenciesAreSatisfied().ConfigureAwait(false))
-            {
-                throw m_exceptionThrowerProvider.ThrowException("Native Dependency requirements are not satisfied");
-            }
+            await m_roboRioDependencyCheckerProvider.CheckIfDependenciesAreSatisfiedAsync().ConfigureAwait(false);
 
 
-            if (!await m_nativePackageDeploymentProvider.DeployNativeContentAsync().ConfigureAwait(false))
-            {
-                throw m_exceptionThrowerProvider.ThrowException("Could not deploy native files");
-            }
+            await m_nativePackageDeploymentProvider.DeployNativeContentAsync().ConfigureAwait(false);
 
             // Deploy robot code
-            if (!await m_robotCodeDeploymentProvider.DeployRobotCodeAsync().ConfigureAwait(false))
-            {
-                throw m_exceptionThrowerProvider.ThrowException("Could not deploy robot code");
-            }
+            await m_robotCodeDeploymentProvider.DeployRobotCodeAsync().ConfigureAwait(false);
 
             // Start robot code
-            if (!await m_robotCodeDeploymentProvider.StartRobotCodeAsync().ConfigureAwait(false))
-            {
-                throw m_exceptionThrowerProvider.ThrowException("Could not property start robot code");
-            }
-
-            await m_outputWriter.WriteLineAsync("Successfully deployed and started code").ConfigureAwait(false);
+            await m_robotCodeDeploymentProvider.StartRobotCodeAsync().ConfigureAwait(false);
         }
     }
 }

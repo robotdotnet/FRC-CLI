@@ -10,20 +10,23 @@ namespace dotnet_frc
         private IProjectInformationProvider m_projectInformationProvider;
         private IBuildSettingsProvider m_buildSettingsProvider;
         private IExceptionThrowerProvider m_exceptionThrowerProvider;
+        private IOutputWriter m_outputWriter;
 
         public DotNetCodeBuilder(IProjectInformationProvider projectInformationProvider, IBuildSettingsProvider buildSettingsProvider,
-            IExceptionThrowerProvider exceptionThrowerProvider)
+            IExceptionThrowerProvider exceptionThrowerProvider, IOutputWriter outputWriter)
         {
             m_projectInformationProvider = projectInformationProvider;
             m_buildSettingsProvider = buildSettingsProvider;
             m_exceptionThrowerProvider = exceptionThrowerProvider;
+            m_outputWriter = outputWriter;
         }
 
-        public async Task<bool> BuildCodeAsync()
+        public async Task BuildCodeAsync()
         {
+            await m_outputWriter.WriteLineAsync("Starting code build").ConfigureAwait(false);
             string outputLoc = await m_projectInformationProvider.GetProjectBuildDirectoryAsync().ConfigureAwait(false);
             string projectDir = await m_projectInformationProvider.GetProjectRootDirectoryAsync().ConfigureAwait(false);
-            int retVal = await Task.Run(() =>
+            var retVal = await Task.Run(() =>
             {
                 string configuration = "Release";
                 if (m_buildSettingsProvider.Debug)
@@ -38,9 +41,13 @@ namespace dotnet_frc
                 };
 
                 var result = Command.CreateDotNet("build", cmdArgs).Execute();
-                return result.ExitCode;
+                return result;
             }).ConfigureAwait(false);
-            return retVal == 0;
+            if (retVal.ExitCode != 0)
+            {
+                throw m_exceptionThrowerProvider.ThrowException($"Failed to build code. Error code: {retVal.ExitCode}");
+            } 
+            await m_outputWriter.WriteLineAsync("Successfully built code").ConfigureAwait(false);
         }
     }
 }

@@ -1,7 +1,6 @@
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using System.Threading.Tasks;
-using FRC.CLI.Base.Interfaces;
 using FRC.CLI.Common;
 using Autofac;
 
@@ -34,7 +33,7 @@ namespace dotnet_frc
         {
             var builder = new ContainerBuilder();
             AutoFacUtilites.AddCommonServicesToContainer(builder, fileOrDirectory, this,
-                _debugOption.HasValue(), _verboseOption.HasValue());
+                _debugOption.HasValue());
             var container = builder.Build();
 
             using (var scope = container.BeginLifetimeScope())

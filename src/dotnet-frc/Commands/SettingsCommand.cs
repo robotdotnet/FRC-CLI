@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -54,7 +53,7 @@ namespace dotnet_frc.Commands
         {
             var builder = new ContainerBuilder();
             AutoFacUtilites.AddCommonServicesToContainer(builder, fileOrDirectory, this,
-                false, _verboseOption.HasValue());
+                false);
             var container = builder.Build();
 
             using (var scope = container.BeginLifetimeScope())
@@ -98,10 +97,7 @@ namespace dotnet_frc.Commands
                     currentSettings.CommandLineArguments.AddRange(setVals);
                 }
 
-                if (!await settingsProvider.WriteFrcSettingsAsync(currentSettings).ConfigureAwait(false))
-                {
-                    throw scope.Resolve<IExceptionThrowerProvider>().ThrowException("Failed to write settings file"); 
-                }
+                await settingsProvider.WriteFrcSettingsAsync(currentSettings).ConfigureAwait(false);
             }
 
             return 0;

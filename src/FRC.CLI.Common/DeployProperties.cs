@@ -4,10 +4,9 @@ namespace FRC.CLI.Common
     {
         public const string UserName = "lvuser";
         public const string DeployDir = "/home/lvuser/mono";
-        public static readonly string[] DeployKillCommand =
-        {
-            ". /etc/profile.d/natinst-path.sh; /usr/local/frc/bin/frcKillRobot.sh -t -r;",
-        };
+        public const string DeployKillCommand =
+            ". /etc/profile.d/natinst-path.sh; /usr/local/frc/bin/frcKillRobot.sh -t -r;";
+            
         public const string UserLibraryDir = "/usr/local/frc/lib";
 
         public const string KillOnlyCommand = ". /etc/profile.d/natinst-path.sh; /usr/local/frc/bin/frcKillRobot.sh -t";

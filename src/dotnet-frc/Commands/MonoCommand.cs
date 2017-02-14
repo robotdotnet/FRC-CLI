@@ -1,9 +1,6 @@
-using System;
-using System.IO;
 using System.Threading.Tasks;
 using Autofac;
 using FRC.CLI.Base.Interfaces;
-using FRC.CLI.Common;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 
@@ -51,64 +48,26 @@ namespace dotnet_frc
         {
             var builder = new ContainerBuilder();
             AutoFacUtilites.AddCommonServicesToContainer(builder, fileOrDirectory, this,
-                false, _verboseOption.HasValue());            
+                false);            
             var container = builder.Build();
 
             using (var scope = container.BeginLifetimeScope())
             {
-                bool downloaded = false;
-                var wpiLibFolder = await scope.Resolve<IWPILibUserFolderResolver>().GetWPILibUserFolderAsync().ConfigureAwait(false);
-                    wpiLibFolder = Path.Combine(wpiLibFolder, "mono");
-                var wpilibDownloadConstants = scope.Resolve<IMonoFileConstantsProvider>();
-                string downloadLocation = Path.Combine(wpiLibFolder, wpilibDownloadConstants.OutputFileName);
+                var runtimeProvider = scope.Resolve<IRuntimeProvider>();
                 if (_downloadOption.HasValue())
                 {
-                    await scope.Resolve<IFileDownloadProvider>().DownloadFileAsync(wpilibDownloadConstants.Url, 
-                        wpiLibFolder, wpilibDownloadConstants.OutputFileName).ConfigureAwait(false);
-                    string sum = await MD5Helper.Md5SumAsync(downloadLocation).ConfigureAwait(false);
-                    if (sum == null || sum != wpilibDownloadConstants.Md5Sum)
-                    {
-                        throw scope.Resolve<IExceptionThrowerProvider>().ThrowException("File not downloaded properly");
-                    }
-                    await scope.Resolve<IOutputWriter>().WriteLineAsync("Successfully downloaded mono. Run with -i argument to deploy to robot");
-                    downloaded = true;
+                    await runtimeProvider.DownladRuntimeAsync();
                 }
+
                 if (_installOption.HasValue())
                 {
-                    if (downloaded)
+                    if (_locationOption.HasValue())
                     {
-                        // Downloaded previously. No need to check file. Just deploy it.
-                        await scope.Resolve<IRemotePackageInstallerProvider>().InstallZippedPackagesAsync(downloadLocation).ConfigureAwait(false);
+                        await runtimeProvider.InstallRuntimeAsync(_locationOption.Value());
                     }
                     else
                     {
-                        // Check for existing file
-                        string sum = await MD5Helper.Md5SumAsync(downloadLocation).ConfigureAwait(false);
-                        if (sum == null || sum != wpilibDownloadConstants.Md5Sum)
-                        {
-                            // No file
-                            if (_locationOption.HasValue())
-                            {
-                                sum = await MD5Helper.Md5SumAsync(_locationOption.Value()).ConfigureAwait(false);
-                                if (sum == null || sum != wpilibDownloadConstants.Md5Sum)
-                                {
-                                    throw scope.Resolve<IExceptionThrowerProvider>().ThrowException("Passed in file could not be found or doesn't match sum");
-                                }
-                                else
-                                {
-                                    await scope.Resolve<IRemotePackageInstallerProvider>().InstallZippedPackagesAsync(_locationOption.Value()).ConfigureAwait(false);
-                                }
-                            }
-                            else
-                            {
-                                throw scope.Resolve<IExceptionThrowerProvider>().ThrowException("Could not find file to deploy");
-                            }
-                        }
-                        else 
-                        {
-                            // File exists. Deploy it
-                            await scope.Resolve<IRemotePackageInstallerProvider>().InstallZippedPackagesAsync(downloadLocation).ConfigureAwait(false);
-                        }
+                        await runtimeProvider.InstallRuntimeAsync();
                     }
                 }
             }

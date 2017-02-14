@@ -23,11 +23,21 @@ namespace FRC.CLI.Common.Implementations
             m_fileDeployerProvider = fileDeployerProvider;
         }
 
-        public async Task<bool> CheckCorrectImageAsync()
+        public async Task CheckCorrectImageAsync()
         {
             string currentImage = await GetCurrentRoboRioImageAsync().ConfigureAwait(false);
             IList<string> allowedImages = await GetAllowedRoboRioImagesAsync().ConfigureAwait(false);
-            return allowedImages.Contains(currentImage);
+            if (!allowedImages.Contains(currentImage))
+            {
+                StringBuilder builder = new StringBuilder();
+                builder.AppendLine("RoboRIO image not correct. Allowed Images:");
+                foreach (var item in allowedImages)
+                {
+                    builder.AppendLine($"    {item}");
+                }
+                builder.AppendLine($"Current Version: {currentImage}");
+                m_exceptionThrowerProvider.ThrowException(builder.ToString());
+            }
         }
 
         public async Task<IList<string>> GetAllowedRoboRioImagesAsync()

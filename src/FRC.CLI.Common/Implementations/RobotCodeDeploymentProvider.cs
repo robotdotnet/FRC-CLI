@@ -16,13 +16,15 @@ namespace FRC.CLI.Common.Implementations
         IBuildSettingsProvider m_buildSettingsProvider;
         IFrcSettingsProvider m_frcSettingsProvider;
         IFileDeployerProvider m_fileDeployerProvider;
+        IExceptionThrowerProvider m_exceptionThrowerProvider;
 
         public RobotCodeDeploymentProvider(IOutputWriter outputWriter,
             IProjectInformationProvider projectInformationProvider,
             INativeContentDeploymentProvider nativePackageDeploymentProvider,
             IBuildSettingsProvider buildSettingsProvider,
             IFrcSettingsProvider frcSettingsProvider,
-            IFileDeployerProvider fileDeployerProvider)
+            IFileDeployerProvider fileDeployerProvider,
+            IExceptionThrowerProvider exceptionThrowerProvider)
         {
             m_outputWriter = outputWriter;
             m_projectInformationProvider = projectInformationProvider;
@@ -30,31 +32,46 @@ namespace FRC.CLI.Common.Implementations
             m_buildSettingsProvider = buildSettingsProvider;
             m_frcSettingsProvider = frcSettingsProvider;
             m_fileDeployerProvider = fileDeployerProvider;
+            m_exceptionThrowerProvider = exceptionThrowerProvider;
         }
 
-        public async Task<bool> DeployRobotCodeAsync()
+        public async Task DeployRobotCodeAsync()
         {
+            await m_outputWriter.WriteLineAsync("Deploying Robot Code Files");
+            bool verbose = m_buildSettingsProvider.Verbose;
             string buildDir = await m_projectInformationProvider.GetProjectBuildDirectoryAsync().ConfigureAwait(false);
             string nativeDir = Path.Combine(buildDir, m_nativePackageDeploymentProvider.NativeDirectory);
-            await m_outputWriter.WriteLineAsync("Creating Mono Deploy Directory").ConfigureAwait(false);
-            await m_fileDeployerProvider.RunCommandsAsync(new string[] {$"mkdir -p {DeployProperties.DeployDir}"}, ConnectionUser.LvUser).ConfigureAwait(false);
+            if (verbose)
+            {
+                await m_outputWriter.WriteLineAsync("Creating Mono Deploy Directory").ConfigureAwait(false);
+            }
+            // Ensure output directory exists
+            await m_fileDeployerProvider.RunCommandAsync($"mkdir -p {DeployProperties.DeployDir}", ConnectionUser.LvUser).ConfigureAwait(false);
+            // Ignore User specified ignore files, and the wpinative folder
             List<string> ignoreFiles = (await m_frcSettingsProvider.GetFrcSettingsAsync()
                 .ConfigureAwait(false))
                 ?.DeployIgnoreFiles;
             var files = Directory.GetFiles(buildDir).Where(x => !x.Contains(nativeDir))
                                                     .Where(f => !DeployProperties.IgnoreFiles.Any(f.Contains))
                                                     .Where(f => !ignoreFiles.Any(f.Contains));
-            await m_outputWriter.WriteLineAsync("Deploying robot files").ConfigureAwait(false);
-            return await m_fileDeployerProvider.DeployFilesAsync(files, DeployProperties.DeployDir, ConnectionUser.LvUser);
+            // Deploy all files
+            if (!await m_fileDeployerProvider.DeployFilesAsync(files, DeployProperties.DeployDir, ConnectionUser.LvUser))
+            {
+                throw m_exceptionThrowerProvider.ThrowException("Failed to deploy robot files");
+            }
+            await m_outputWriter.WriteLineAsync("Successfully deployed robot code files").ConfigureAwait(false);
         }
 
-        public async Task<bool> StartRobotCodeAsync()
+        public async Task StartRobotCodeAsync()
         {
+            await m_outputWriter.WriteLineAsync("Starting robot code").ConfigureAwait(false);
             bool debug = m_buildSettingsProvider.Debug;
             // Force release until I can get debugging working properly
             debug = true;
 
-            await m_fileDeployerProvider.RunCommandsAsync(new string[] {DeployProperties.KillOnlyCommand}, ConnectionUser.LvUser).ConfigureAwait(false);
+            // Run kill command to ensure that no code issues happen
+            // Ignore output, as this failing is not a big issue.
+            await m_fileDeployerProvider.RunCommandAsync(DeployProperties.KillOnlyCommand, ConnectionUser.LvUser).ConfigureAwait(false);
 
             //Combining all other commands, since they should be safe running together.
             List<string> commands = new List<string>();
@@ -72,7 +89,7 @@ namespace FRC.CLI.Common.Implementations
             }
             else
             {
-                deployedCmd = string.Format(DeployProperties.RobotCommand, robotName, ipAddress);
+                deployedCmd = string.Format(DeployProperties.RobotCommand, robotName);
                 deployedCmdFrame = DeployProperties.RobotCommandFileName;
             }
             
@@ -98,15 +115,19 @@ namespace FRC.CLI.Common.Implementations
                 //If debug write the debug flag.
                 commands.AddRange(DeployProperties.DebugFlagCommand);
             }
-            //Add all commands to restart
-            commands.AddRange(DeployProperties.DeployKillCommand);
+            // Run a sync to ensure all files get saved
+            commands.Add("sync");
             //run all commands
             await m_fileDeployerProvider.RunCommandsAsync(commands.ToArray(), ConnectionUser.LvUser).ConfigureAwait(false);
 
-            //Run sync so files are written to disk.
-            await m_fileDeployerProvider.RunCommandsAsync(new string[] {"sync"}, ConnectionUser.LvUser).ConfigureAwait(false);
-            // TODO: Figure out when to make this return false;
-            return true;
+            //Run start command individually so we can chec to make sure everything works.
+            var codeRet = await m_fileDeployerProvider.RunCommandAsync(DeployProperties.DeployKillCommand, 
+                ConnectionUser.LvUser).ConfigureAwait(false);
+            if (codeRet.ExitStatus != 0)
+            {
+                throw m_exceptionThrowerProvider.ThrowException("Failed to successfully start robot code");
+            }
+            await m_outputWriter.WriteLineAsync("Successfully started code").ConfigureAwait(false);
         }
     }
 }

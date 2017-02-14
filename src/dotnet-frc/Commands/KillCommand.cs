@@ -26,13 +26,14 @@ namespace dotnet_frc
         {
             var builder = new ContainerBuilder();
             AutoFacUtilites.AddCommonServicesToContainer(builder, fileOrDirectory, this,
-                false, _verboseOption.HasValue());
+                false);
             var container = builder.Build();
 
             using (var scope = container.BeginLifetimeScope())
             {
+                await scope.Resolve<IOutputWriter>().WriteLineAsync("Killing robot code");
                 var rioConn = scope.Resolve<IFileDeployerProvider>();
-                await rioConn.RunCommandsAsync(new string[] { DeployProperties.KillOnlyCommand}, ConnectionUser.LvUser);
+                await rioConn.RunCommandAsync(DeployProperties.KillOnlyCommand, ConnectionUser.LvUser);
             }
             return 0;
         }

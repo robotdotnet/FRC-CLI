@@ -48,7 +48,7 @@ namespace FRC.CLI.Common.Implementations
                 await m_outputWriter.WriteLineAsync("Creating Opkg Directory").ConfigureAwait(false);
             }
 
-            await m_fileDeployerProvider.RunCommandsAsync(new string[] {$"mkdir -p {RoboRioOpgkLocation}"},
+            await m_fileDeployerProvider.RunCommandAsync($"mkdir -p {RoboRioOpgkLocation}",
                             ConnectionUser.Admin).ConfigureAwait(false);
             
             var ret = await m_fileDeployerProvider.DeployFilesAsync(new string[] {localFile}, RoboRioOpgkLocation,
@@ -73,7 +73,7 @@ namespace FRC.CLI.Common.Implementations
             await m_fileDeployerProvider.RunCommandsAsync(installCommands, ConnectionUser.Admin);
 
             //Removing ipk files from the RoboRIO
-            await m_fileDeployerProvider.RunCommandsAsync(new string[] {$"rm -rf {RoboRioOpgkLocation}"},
+            await m_fileDeployerProvider.RunCommandAsync($"rm -rf {RoboRioOpgkLocation}",
                 ConnectionUser.Admin).ConfigureAwait(false);
 
             if (verbose)

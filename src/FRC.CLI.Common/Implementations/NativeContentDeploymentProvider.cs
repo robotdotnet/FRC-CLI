@@ -13,21 +13,24 @@ namespace FRC.CLI.Common.Implementations
         IProjectInformationProvider m_projectInformationProvider;
         IExceptionThrowerProvider m_exceptionThrowerProvider;
         IFileDeployerProvider m_fileDeployerProvider;
+        IOutputWriter m_outputWriter;
 
         public string NativeDirectory => "wpinative";
 
         public NativeContentDeploymentProvider(IWPILibNativeDeploySettingsProvider wpilibNativeDeploySettingsProvider,
             IProjectInformationProvider projectInformationProvider, IExceptionThrowerProvider exceptionThrowerProvider,
-            IFileDeployerProvider fileDeployerProvider)
+            IFileDeployerProvider fileDeployerProvider, IOutputWriter outputWriter)
         {
             m_wpilibNativeDeploySettingsProvider = wpilibNativeDeploySettingsProvider;
             m_projectInformationProvider = projectInformationProvider;
             m_exceptionThrowerProvider = exceptionThrowerProvider;
             m_fileDeployerProvider = fileDeployerProvider;
+            m_outputWriter = outputWriter;
         }
 
-        public async Task<bool> DeployNativeContentAsync()
+        public async Task DeployNativeContentAsync()
         {
+            await m_outputWriter.WriteLineAsync("Deploying native dependencies").ConfigureAwait(false);
             MemoryStream memStream = new MemoryStream();
             bool readFile = await m_fileDeployerProvider.ReceiveFileAsync(
                 $"{m_wpilibNativeDeploySettingsProvider.NativeDeployLocation}/{m_wpilibNativeDeploySettingsProvider.NativePropertiesFileName}",
@@ -40,11 +43,13 @@ namespace FRC.CLI.Common.Implementations
 
             if (fileMd5List == null)
             {
-                return false;
+                throw m_exceptionThrowerProvider.ThrowException("Failed to find all files to deploy");
             }
             if (!readFile)
             {
-                return await DeployNativeLibrariesAsync(fileMd5List).ConfigureAwait(false);
+                await DeployNativeLibrariesAsync(fileMd5List).ConfigureAwait(false);
+                await m_outputWriter.WriteLineAsync("Successfully deployed native files").ConfigureAwait(false);
+                return;
             }
 
             memStream.Position = 0;
@@ -78,11 +83,10 @@ namespace FRC.CLI.Common.Implementations
 
             if (foundError || readCount != fileMd5List.Count)
             {
-                return await DeployNativeLibrariesAsync(fileMd5List).ConfigureAwait(false);
+                await DeployNativeLibrariesAsync(fileMd5List).ConfigureAwait(false);
             }
 
-
-            return true;
+            await m_outputWriter.WriteLineAsync("Successfully deployed native files").ConfigureAwait(false);
         }
 
         public async Task<List<Tuple<string, string>>> GetMd5ForFilesAsync(string fileLocation, IList<string> ignoreFiles)
@@ -114,7 +118,7 @@ namespace FRC.CLI.Common.Implementations
             }
         }
 
-        public async Task<bool> DeployNativeLibrariesAsync(List<Tuple<string, string>> files)
+        public async Task DeployNativeLibrariesAsync(List<Tuple<string, string>> files)
         {
             List<string> fileList = new List<string>(files.Count);
             bool nativeDeploy = false;
@@ -139,7 +143,7 @@ namespace FRC.CLI.Common.Implementations
                 m_wpilibNativeDeploySettingsProvider.NativeDeployLocation, ConnectionUser.Admin).ConfigureAwait(false);
             // TODO: Figure out why trying to deploy the raw MemoryStream was Deadlocking
             //md5Deploy = await rioConn.DeployFileAsync(memStream, $"{remoteDirectory}/{propertiesName}32.properties", ConnectionUser.Admin).ConfigureAwait(false);
-            await m_fileDeployerProvider.RunCommandsAsync(new string[] {"ldconfig"}, ConnectionUser.Admin).ConfigureAwait(false);
+            await m_fileDeployerProvider.RunCommandAsync("ldconfig", ConnectionUser.Admin).ConfigureAwait(false);
 
             try
             {
@@ -150,7 +154,10 @@ namespace FRC.CLI.Common.Implementations
 
             }
 
-            return nativeDeploy;
+            if (!nativeDeploy)
+            {
+                throw m_exceptionThrowerProvider.ThrowException("Failed to deploy native files");
+            }
         }
     }
 }
