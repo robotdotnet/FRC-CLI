@@ -3,15 +3,27 @@
     <PackageReference Include="autofac">
       <Version>4.3.0</Version>
     </PackageReference>
-    <ProjectReference Include="..\FRC.CLI.Base\FRC.CLI.Base.csproj" />
-    <ProjectReference Include="..\FRC.CLI.Common\FRC.CLI.Common.csproj" />
+    <ProjectReference Include="..\FRC.CLI.Base\FRC.CLI.Base.csproj" >
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
+    <ProjectReference Include="..\FRC.CLI.Common\FRC.CLI.Common.csproj" >
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
     <PackageReference Include="Microsoft.DotNet.CLI.Utils">
       <Version>2.0.0-alpha-004847</Version>
     </PackageReference>
+    <Content Include="$(OutputPath)/*.dll" Pack="true" PackagePath="lib\netcoreapp1.0\" />
   </ItemGroup>
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp1.0</TargetFramework>
-    <RuntimeIdentifier>win7-x64</RuntimeIdentifier>
+
+    <PackageId>FRC.DotNet.CLI</PackageId>
+    <Authors>RobotDotNet</Authors>
+    <Description>FRC CLI Tool</Description>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes>First release</PackageReleaseNotes>
+    <Copyright>Copyright 2017 (c) RobotDotNet. All rights reserved.</Copyright>
+    <PackageTags>FRC</PackageTags>
   </PropertyGroup>
 </Project>
