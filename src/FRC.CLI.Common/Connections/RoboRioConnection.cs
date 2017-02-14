@@ -74,7 +74,7 @@ namespace FRC.CLI.Common.Connections
 
             if (teamNumber < 0)
             {
-                throw m_exceptionThrowerProvider.ThrowException("Team number cannot be less than 0");
+                throw m_exceptionThrowerProvider.ThrowException("Team number cannot be less than 0. Check settings");
             }
 
             await m_outputWriter.WriteLineAsync($"Connecting to robot for team {teamNumber}").ConfigureAwait(false);
