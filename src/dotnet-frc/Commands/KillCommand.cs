@@ -14,6 +14,7 @@ namespace dotnet_frc
             var command = new KillCommand
             {
                 Name = "kill",
+                Description = "Kills the currently running code on the robot",
                 HandleRemainingArguments = false
             };
 

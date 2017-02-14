@@ -20,6 +20,7 @@ namespace dotnet_frc.Commands
             var command = new SettingsCommand
             {
                 Name = "settings",
+                Description = "Set FRC specific settings",
                 HandleRemainingArguments = false
             };
 
@@ -58,6 +59,15 @@ namespace dotnet_frc.Commands
 
             using (var scope = container.BeginLifetimeScope())
             {
+                if (!_teamOption.HasValue() && !_ignoreCommand.HasValue() 
+                                           && !_argumentCommand.HasValue()
+                                           && !_updateArgument.HasValue())
+                {
+                    throw scope.Resolve<IExceptionThrowerProvider>().ThrowException(
+                        "No argument specified. Must provide an argument to use"
+                    );
+                }
+
                 if (_updateArgument.HasValue())
                 {
                     

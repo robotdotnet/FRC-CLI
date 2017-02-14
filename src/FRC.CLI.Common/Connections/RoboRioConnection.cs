@@ -117,7 +117,7 @@ namespace FRC.CLI.Common.Connections
 
                     if (finished == delayTask)
                     {
-                        throw m_exceptionThrowerProvider.ThrowException("Connection timed out");
+                        throw m_exceptionThrowerProvider.ThrowException("Connection to robot timed out");
                     }
                     else if (finished.IsCompleted && !finished.IsFaulted && !finished.IsCanceled)
                     {

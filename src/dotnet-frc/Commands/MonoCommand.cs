@@ -18,19 +18,20 @@ namespace dotnet_frc
             var command = new MonoCommand
             {
                 Name = "mono",
+                Description = "Installs mono on the robot",
                 HandleRemainingArguments = false
             };
 
             SetupBaseOptions(command);
 
             command._downloadOption = command.Option(
-                "-d|--download <DOWNLOAD>",
+                "-d|--download",
                 "Download mono",
                 CommandOptionType.NoValue
             );
 
             command._installOption = command.Option(
-                "-i|--install <Install>",
+                "-i|--install",
                 "Install mono",
                 CommandOptionType.NoValue
             );
@@ -53,6 +54,13 @@ namespace dotnet_frc
 
             using (var scope = container.BeginLifetimeScope())
             {
+                if (!_downloadOption.HasValue() && !_installOption.HasValue())
+                {
+                    throw scope.Resolve<IExceptionThrowerProvider>().ThrowException(
+                        "No argument specified. Must provide an argument to use"
+                    );
+                }
+
                 var runtimeProvider = scope.Resolve<IRuntimeProvider>();
                 if (_downloadOption.HasValue())
                 {

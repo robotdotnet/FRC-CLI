@@ -15,6 +15,7 @@ namespace dotnet_frc
             var command = new DeployCommand
             {
                 Name = "deploy",
+                Description = "Deploys code to the robot",
                 HandleRemainingArguments = false
             };
 
