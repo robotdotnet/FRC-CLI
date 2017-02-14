@@ -38,7 +38,7 @@ namespace dotnet_frc
                 var frcSettings = await m_frcSettingsProvider.Value.GetFrcSettingsAsync().ConfigureAwait(false);
                 if (frcSettings == null)
                 {
-                    throw m_exceptionThrowerProvider.ThrowException("Could not find team number");
+                    throw m_exceptionThrowerProvider.ThrowException("Could not find team number. Please either use a -t argument, \nor run dotnet frc settings to set a permanent team number");
                 }
                 if (!int.TryParse(frcSettings.TeamNumber, out teamNumber))
                 {

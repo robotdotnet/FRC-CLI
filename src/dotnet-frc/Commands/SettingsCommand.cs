@@ -78,7 +78,7 @@ namespace dotnet_frc.Commands
                 if (currentSettings == null)
                 {
                     currentSettings = new FrcSettings();
-                    currentSettings.TeamNumber = "0";
+                    currentSettings.TeamNumber = "-1";
                     currentSettings.CommandLineArguments = new List<string>();
                     currentSettings.DeployIgnoreFiles = new List<string>();
                 }
