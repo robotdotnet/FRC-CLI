@@ -14,13 +14,16 @@ namespace FRC.CLI.Common.Implementations
         private IWPILibImageSettingsProvider m_wpilibImageSettingsProvider;
         private IExceptionThrowerProvider m_exceptionThrowerProvider;
         private IFileDeployerProvider m_fileDeployerProvider;
+        private IPostRequestProvider m_postRequestProvider;
         public RoboRioImageProvider(IWPILibImageSettingsProvider wpilibImageSettingsProvider, 
             IExceptionThrowerProvider exceptionThrowerProvider,
-            IFileDeployerProvider fileDeployerProvider)
+            IFileDeployerProvider fileDeployerProvider,
+            IPostRequestProvider postRequestProvider)
         {
             m_wpilibImageSettingsProvider = wpilibImageSettingsProvider;
             m_exceptionThrowerProvider = exceptionThrowerProvider;
             m_fileDeployerProvider = fileDeployerProvider;
+            m_postRequestProvider = postRequestProvider;
         }
 
         public async Task CheckCorrectImageAsync()
@@ -36,7 +39,7 @@ namespace FRC.CLI.Common.Implementations
                     builder.AppendLine($"    {item}");
                 }
                 builder.AppendLine($"Current Version: {currentImage}");
-                m_exceptionThrowerProvider.ThrowException(builder.ToString());
+                throw m_exceptionThrowerProvider.ThrowException(builder.ToString());
             }
         }
 
@@ -47,35 +50,29 @@ namespace FRC.CLI.Common.Implementations
 
         public async Task<string> GetCurrentRoboRioImageAsync()
         {
-            using (HttpClient wc = new HttpClient())
-            { 
-                var content = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
-                {
-                    new KeyValuePair<string, string>("Function", "GetPropertiesOfItem"),
-                    new KeyValuePair<string, string>("Plugins", "nisyscfg"),
-                    new KeyValuePair<string, string>("Items", "system")
-                });
+            var content = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("Function", "GetPropertiesOfItem"),
+                new KeyValuePair<string, string>("Plugins", "nisyscfg"),
+                new KeyValuePair<string, string>("Items", "system")
+            });
+            IPAddress connectionIp = await m_fileDeployerProvider.GetConnectionIpAsync().ConfigureAwait(false);
+            var sstring = await m_postRequestProvider.GetPostRequestAsync($"http://{connectionIp.ToString()}/nisysapi/server", 
+                content).ConfigureAwait(false);
 
-                IPAddress connectionIp = await m_fileDeployerProvider.GetConnectionIpAsync().ConfigureAwait(false);
-                var reqResult = await wc.PostAsync($"http://{connectionIp.ToString()}/nisysapi/server", content).ConfigureAwait(false);
-                var result = await reqResult.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+            var doc = new XmlDocument();
+            doc.LoadXml(sstring);
 
-                var sstring = Encoding.Unicode.GetString(result);
+            var vals = doc.GetElementsByTagName("Property");
 
-                var doc = new XmlDocument();
-                doc.LoadXml(sstring);
+            string str = null;
 
-                var vals = doc.GetElementsByTagName("Property");
-
-                string str = null;
-
-                foreach (XmlElement val in vals.Cast<XmlElement>().Where(val => val.InnerText.Contains("FRC_roboRIO")))
-                {
-                    str = val.InnerText;
-                }
-
-                return str;
+            foreach (XmlElement val in vals.Cast<XmlElement>().Where(val => val.InnerText.Contains("FRC_roboRIO")))
+            {
+                str = val.InnerText;
             }
+
+            return str;
         }
     }
 }

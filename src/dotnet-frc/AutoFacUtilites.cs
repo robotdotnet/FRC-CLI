@@ -37,6 +37,7 @@ namespace dotnet_frc
             builder.RegisterType<RemotePackageInstallerProvider>().As<IRemotePackageInstallerProvider>();
             builder.RegisterType<MonoRuntimeProvider>().As<IRuntimeProvider>();
             builder.RegisterType<Md5HashCheckerProvider>().As<IMd5HashCheckerProvider>();
+            builder.RegisterType<HttpPostRequestProvider>().As<IPostRequestProvider>();
         }
     }
 }

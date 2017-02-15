@@ -13,7 +13,10 @@ namespace FRC.CLI.Common.Implementations
         {
             get 
             {
-                return new List<string>();
+                return new List<string>
+                {
+                    "ImageSettings.json"
+                };
             }
         }
     }
