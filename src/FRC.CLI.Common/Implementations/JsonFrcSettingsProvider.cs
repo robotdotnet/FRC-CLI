@@ -14,15 +14,17 @@ namespace FRC.CLI.Common.Implementations
         IOutputWriter m_outputWriter;
         IProjectInformationProvider m_projectInformationProvider;
         IBuildSettingsProvider m_buildSettingsProvider;
+        IFileReaderProvider m_fileReaderProvider;
 
         public JsonFrcSettingsProvider(IExceptionThrowerProvider exceptionThrowerProvider,
             IOutputWriter outputWriter, IProjectInformationProvider projectInformationProvider,
-            IBuildSettingsProvider buildSettingsProvider)
+            IBuildSettingsProvider buildSettingsProvider, IFileReaderProvider fileReaderProvider)
         {
             m_exceptionThrowerProvider = exceptionThrowerProvider;
             m_outputWriter = outputWriter;
             m_projectInformationProvider = projectInformationProvider;
             m_buildSettingsProvider = buildSettingsProvider;
+            m_fileReaderProvider = fileReaderProvider;
         }
 
         public async Task<FrcSettings> GetFrcSettingsAsync()
@@ -34,22 +36,14 @@ namespace FRC.CLI.Common.Implementations
             }
             string projectDirectory = await m_projectInformationProvider.GetProjectRootDirectoryAsync().ConfigureAwait(false);
             string settingsFile = Path.Combine(projectDirectory, SettingsJsonFileName);
-            if (!File.Exists(settingsFile))
-            {
-                if (verbose)
-                {
-                    await m_outputWriter.WriteLineAsync("Could not find settings file").ConfigureAwait(false);
-                }
-                return null;
-            }
             string json = null;
             try 
             {
-                json = await Task.Run(() => File.ReadAllText(settingsFile)).ConfigureAwait(false);
+                json = await m_fileReaderProvider.ReadFileAsStringAsync(settingsFile).ConfigureAwait(false);
             }
             catch (IOException)
             {
-                // Locked file, failed to read
+                // Locked or missing file, failed to read
                 if (verbose)
                 {
                     await m_outputWriter.WriteLineAsync("Could not read from settings file").ConfigureAwait(false);

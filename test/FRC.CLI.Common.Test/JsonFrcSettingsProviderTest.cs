@@ -14,9 +14,9 @@ namespace FRC.CLI.Common.Test
         public string jsonFile = Path.Combine(Path.GetTempPath(), JsonFrcSettingsProvider.SettingsJsonFileName);
 
         [Fact]
-        public async Task TestReadSettingsDoesNotExist()
+        public async Task TestReadSettingsCatchesIoException()
         {
-            using (var mock = AutoMock.GetLoose())
+            using (var mock = AutoMock.GetStrict())
             {
 
                 
@@ -25,19 +25,8 @@ namespace FRC.CLI.Common.Test
                 });
 
                 mock.Mock<IExceptionThrowerProvider>().Setup(x => x.ThrowException(It.IsAny<string>())).Returns(new Exception());
-
-                if (File.Exists(jsonFile))
-                {
-                    try 
-                    {
-                        File.Delete(jsonFile);
-                    }
-                    catch (Exception)
-                    {
-
-                    }
-                }
-
+                mock.Mock<IBuildSettingsProvider>().SetupGet(x => x.Verbose).Returns(false);
+                mock.Mock<IFileReaderProvider>().Setup(x => x.ReadFileAsStringAsync(It.IsAny<string>())).Throws(new IOException("Failed to read file"));
 
                 var sut = mock.Create<JsonFrcSettingsProvider>();
 
@@ -50,34 +39,22 @@ namespace FRC.CLI.Common.Test
         [Fact]
         public async Task TestReadSettingsInvalidJson1()
         {
-            using (var mock = AutoMock.GetLoose())
+            using (var mock = AutoMock.GetStrict())
             {
-
-                
                 mock.Mock<IProjectInformationProvider>().Setup(x => x.GetProjectRootDirectoryAsync()).Returns(() => {
                     return Task.FromResult(Path.GetTempPath());
                 });
 
-                mock.Mock<IExceptionThrowerProvider>().Setup(x => x.ThrowException(It.IsAny<string>())).Returns(new Exception());
-
-                if (File.Exists(jsonFile))
-                {
-                    try 
-                    {
-                        File.Delete(jsonFile);
-                    }
-                    catch (Exception)
-                    {
-
-                    }
-                }
-                File.WriteAllText(jsonFile, @"
-{
+                string badJson = 
+@"{
     tean: 9999
 }                    
-");
-      
+";
+                mock.Mock<IBuildSettingsProvider>().SetupGet(x => x.Verbose).Returns(false);
+                mock.Mock<IExceptionThrowerProvider>().Setup(x => x.ThrowException(It.IsAny<string>())).Returns(new Exception());
 
+                mock.Mock<IFileReaderProvider>().Setup(x => x.ReadFileAsStringAsync(It.IsAny<string>())).ReturnsAsync(badJson);
+      
                 var sut = mock.Create<JsonFrcSettingsProvider>();
 
                 var actual = await sut.GetFrcSettingsAsync().ConfigureAwait(false);
@@ -87,41 +64,9 @@ namespace FRC.CLI.Common.Test
         }
 
         [Fact]
-        public async Task TestReadSettingsLockedFile()
-        {
-            using (var mock = AutoMock.GetLoose())
-            {
-                mock.Mock<IProjectInformationProvider>().Setup(x => x.GetProjectRootDirectoryAsync()).Returns(() => {
-                    return Task.FromResult(Path.GetTempPath());
-                });
-
-                mock.Mock<IExceptionThrowerProvider>().Setup(x => x.ThrowException(It.IsAny<string>())).Returns(new Exception());
-
-                if (File.Exists(jsonFile))
-                {
-                    try 
-                    {
-                        File.Delete(jsonFile);
-                    }
-                    catch (Exception)
-                    {
-
-                    }
-                }
-                using (FileStream f = File.Create(jsonFile))
-                {
-                    var sut = mock.Create<JsonFrcSettingsProvider>();
-                    var actual = await sut.GetFrcSettingsAsync().ConfigureAwait(false);
-                    Assert.Null(actual);
-                    
-                }
-            }
-        }
-
-        [Fact]
         public async Task TestReadSettingsOnlyTeamNumber()
         {
-            using (var mock = AutoMock.GetLoose())
+            using (var mock = AutoMock.GetStrict())
             {
                 mock.Mock<IProjectInformationProvider>().Setup(x => x.GetProjectRootDirectoryAsync()).Returns(() => {
                     return Task.FromResult(Path.GetTempPath());
@@ -129,25 +74,17 @@ namespace FRC.CLI.Common.Test
 
                 mock.Mock<IExceptionThrowerProvider>().Setup(x => x.ThrowException(It.IsAny<string>())).Returns(new Exception());
 
-                if (File.Exists(jsonFile))
-                {
-                    try 
-                    {
-                        File.Delete(jsonFile);
-                    }
-                    catch (Exception)
-                    {
+                mock.Mock<IBuildSettingsProvider>().SetupGet(x => x.Verbose).Returns(false);
 
-                    }
-                }
-
-                File.WriteAllText(jsonFile, @"
-{
+                string goodJson = 
+@"{
   ""TeamNumber"": ""9999"",
   ""CommandLineArguments"": [],
   ""DeployIgnoreFiles"": []
 }                  
-");
+";
+
+                mock.Mock<IFileReaderProvider>().Setup(x => x.ReadFileAsStringAsync(It.IsAny<string>())).ReturnsAsync(goodJson);
                 var sut = mock.Create<JsonFrcSettingsProvider>();
                 var actual = await sut.GetFrcSettingsAsync().ConfigureAwait(false);
                 Assert.NotNull(actual);
