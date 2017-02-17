@@ -9,8 +9,7 @@
             "program": "${workspaceRoot}\\src\\dotnet-frc\\bin\\Debug\\netcoreapp1.0\\dotnet-frc.dll",
             "args": [
                 "C:\\Users\\thadh\\Documents\\VSTests\\src\\Robot451",
-                "mono",
-                "-i",
+                "deploy",
                 "-v"
             ],
             "cwd": "${workspaceRoot}",

@@ -21,7 +21,8 @@ namespace FRC.CLI.Common.Implementations
 
         public NativeContentDeploymentProvider(IWPILibNativeDeploySettingsProvider wpilibNativeDeploySettingsProvider,
             IProjectInformationProvider projectInformationProvider, IExceptionThrowerProvider exceptionThrowerProvider,
-            IFileDeployerProvider fileDeployerProvider, IOutputWriter outputWriter)
+            IFileDeployerProvider fileDeployerProvider, IOutputWriter outputWriter,
+            IMd5HashCheckerProvider md5HashFileChecker)
         {
             m_wpilibNativeDeploySettingsProvider = wpilibNativeDeploySettingsProvider;
             m_projectInformationProvider = projectInformationProvider;
@@ -47,16 +48,21 @@ namespace FRC.CLI.Common.Implementations
             using (JsonTextReader jsonReader = new JsonTextReader(reader))
             {
                 JsonSerializer serializer = new JsonSerializer();
-                var retVal = serializer.Deserialize<List<(string file, string hash)>>(jsonReader);
-                if (retVal == null)
+                try
+                {
+                    var retVal = serializer.Deserialize<List<(string, string)>>(jsonReader);
+                    if (retVal == null)
+                    {
+                        return new List<(string, string)>();
+                    }
+                    return retVal;
+                }
+                catch (JsonReaderException)
                 {
                     return new List<(string, string)>();
                 }
-                return retVal;
             }
         }
-
-        
 
         public async Task DeployNativeContentAsync()
         {
@@ -75,7 +81,6 @@ namespace FRC.CLI.Common.Implementations
             bool readFile = await m_fileDeployerProvider.ReceiveFileAsync(
                 $"{m_wpilibNativeDeploySettingsProvider.NativeDeployLocation}/{m_wpilibNativeDeploySettingsProvider.NativePropertiesFileName}",
                 memStream, ConnectionUser.Admin).ConfigureAwait(false);
-
             if (!readFile)
             {
                 // TODO: Add Verbose
@@ -84,6 +89,7 @@ namespace FRC.CLI.Common.Implementations
                 return;
             }
 
+            memStream.Position = 0;
             var updateList = GetFilesToUpdate(memStream, fileMd5List).ToList();
 
             if (updateList.Count == 0)
@@ -96,34 +102,32 @@ namespace FRC.CLI.Common.Implementations
             await m_outputWriter.WriteLineAsync("Successfully deployed native files").ConfigureAwait(false);            
         }
 
+        public virtual IEnumerable<string> GetNativeFileList(string fileLocation)
+        {
+            if (!Directory.Exists(fileLocation))
+            {
+                throw m_exceptionThrowerProvider.ThrowException("Failed to find native content directory to deploy");
+            }
+
+            return Directory.GetFiles(fileLocation);
+        }
+
         public virtual async Task<List<(string file, string hash)>> GetMd5ForFilesAsync(string fileLocation, 
             IEnumerable<string> ignoreFiles)
         {
-            if (Directory.Exists(fileLocation))
+            var files = GetNativeFileList(fileLocation);
+
+            var filtered = files.Where(x => !ignoreFiles.Contains(Path.GetFileName(x)));
+
+            List<(string file, string hash)> retFiles = new List<(string, string)>();
+            
+            foreach (var file in filtered)
             {
-                string[] files = Directory.GetFiles(fileLocation);
-                List<(string file, string hash)> retList = new List<(string file, string hash)>(files.Length);
-                foreach (var file in files)
-                {
-                    bool skip = false;
-                    foreach (string ignoreFile in ignoreFiles)
-                    {
-                        if (file.Contains(ignoreFile))
-                        {
-                            skip = true;
-                            break;
-                        }
-                    }
-                    if (skip) continue;
-                    string md5 = await MD5Helper.Md5SumAsync(file);
-                    retList.Add((file, md5));
-                }
-                return retList;
+                string hash = await MD5Helper.Md5SumAsync(file);
+                retFiles.Add((file, hash));
             }
-            else
-            {
-                return null;
-            }
+
+            return retFiles;
         }
 
         public async Task DeployNativeLibrariesAsync(IList<(string file, string hash)> files)
@@ -138,7 +142,10 @@ namespace FRC.CLI.Common.Implementations
                 File.WriteAllText(tempFile, json);
             });
 
-            nativeDeploy = await m_fileDeployerProvider.DeployFilesAsync(files.Select(x => x.file), 
+            var filesToDeploy = files.Select(x => x.file).ToList();
+            filesToDeploy.Add(tempFile);
+
+            nativeDeploy = await m_fileDeployerProvider.DeployFilesAsync(filesToDeploy, 
                 m_wpilibNativeDeploySettingsProvider.NativeDeployLocation, ConnectionUser.Admin).ConfigureAwait(false);
             // TODO: Figure out why trying to deploy the raw MemoryStream was Deadlocking
             //md5Deploy = await rioConn.DeployFileAsync(memStream, $"{remoteDirectory}/{propertiesName}32.properties", ConnectionUser.Admin).ConfigureAwait(false);
