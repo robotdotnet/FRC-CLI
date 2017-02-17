@@ -478,6 +478,32 @@ namespace FRC.CLI.Common.Connections
             CreateConnection();
             return m_remoteIp;
         }
+
+        public async Task<bool> DeployStreamAsync(Stream stream, string deployLocation, ConnectionUser user)
+        {
+            await CreateConnectionAsync().ConfigureAwait(false);
+            ScpClient scp;
+            switch (user)
+            {
+                case ConnectionUser.Admin:
+                    scp = m_scpAdminClient;
+                    break;
+                case ConnectionUser.LvUser:
+                    scp = m_scpUserClient;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(user), user, null);
+            }
+
+            bool verbose = m_buildSettingsProvider.Verbose;
+            if (verbose)
+            {
+                await m_outputWriter.WriteLineAsync($"Deploying File: {deployLocation}").ConfigureAwait(false);
+            }
+            stream.Position = 0;
+            await Task.Run(() => scp.Upload(stream, deployLocation)).ConfigureAwait(false);
+            return true;
+        }
         #endregion
 
     }

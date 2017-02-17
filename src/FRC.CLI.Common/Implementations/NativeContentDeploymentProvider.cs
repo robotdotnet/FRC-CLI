@@ -98,7 +98,7 @@ namespace FRC.CLI.Common.Implementations
                 return;
             }
 
-            await DeployNativeLibrariesAsync(fileMd5List).ConfigureAwait(false);
+            await DeployNativeLibrariesAsync(updateList).ConfigureAwait(false);
             await m_outputWriter.WriteLineAsync("Successfully deployed native files").ConfigureAwait(false);            
         }
 
@@ -130,37 +130,40 @@ namespace FRC.CLI.Common.Implementations
             return retFiles;
         }
 
-        public async Task DeployNativeLibrariesAsync(IList<(string file, string hash)> files)
+        public virtual string SerializeFileHashList(IEnumerable<(string file, string hash)> files)
         {
-            bool nativeDeploy = false;
+            return JsonConvert.SerializeObject(files, Formatting.Indented);
+        }
 
-            string tempFile = Path.Combine(Path.GetTempPath(), m_wpilibNativeDeploySettingsProvider.NativePropertiesFileName);
-
-            await Task.Run(() => 
-            {
-                var json = JsonConvert.SerializeObject(files, Formatting.Indented);
-                File.WriteAllText(tempFile, json);
-            });
-
-            var filesToDeploy = files.Select(x => x.file).ToList();
-            filesToDeploy.Add(tempFile);
-
-            nativeDeploy = await m_fileDeployerProvider.DeployFilesAsync(filesToDeploy, 
+        public async Task DeployNativeFilesAsync(IEnumerable<string> files)
+        {
+            bool nativeDeploy = await m_fileDeployerProvider.DeployFilesAsync(files, 
                 m_wpilibNativeDeploySettingsProvider.NativeDeployLocation, ConnectionUser.Admin).ConfigureAwait(false);
-            // TODO: Figure out why trying to deploy the raw MemoryStream was Deadlocking
-            //md5Deploy = await rioConn.DeployFileAsync(memStream, $"{remoteDirectory}/{propertiesName}32.properties", ConnectionUser.Admin).ConfigureAwait(false);
             await m_fileDeployerProvider.RunCommandAsync("ldconfig", ConnectionUser.Admin).ConfigureAwait(false);
 
-            try
-            {
-                File.Delete(tempFile);
-            }
-            catch (Exception)
-            {
-
-            }
-
             if (!nativeDeploy)
+            {
+                throw m_exceptionThrowerProvider.ThrowException("Failed to deploy native files");
+            }
+        }
+
+        public async Task DeployNativeLibrariesAsync(IEnumerable<(string file, string hash)> files)
+        {
+            var jsonString = SerializeFileHashList(files);
+
+            MemoryStream memStream = new MemoryStream();
+            StreamWriter writer = new StreamWriter(memStream);
+            await writer.WriteAsync(jsonString);
+            writer.Flush();
+            memStream.Position = 0;
+
+            await DeployNativeFilesAsync(files.Select(x => x.file)).ConfigureAwait(false);;
+
+            var md5Deploy = await m_fileDeployerProvider.DeployStreamAsync(memStream, 
+                $"{m_wpilibNativeDeploySettingsProvider.NativeDeployLocation}/{m_wpilibNativeDeploySettingsProvider.NativePropertiesFileName}", 
+                ConnectionUser.Admin).ConfigureAwait(false);
+
+            if (!md5Deploy)
             {
                 throw m_exceptionThrowerProvider.ThrowException("Failed to deploy native files");
             }

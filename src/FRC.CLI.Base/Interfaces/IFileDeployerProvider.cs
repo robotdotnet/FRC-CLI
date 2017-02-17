@@ -17,5 +17,6 @@ namespace FRC.CLI.Base.Interfaces
         Task<bool> ReceiveFileAsync(string remoteFile, Stream receiveStream, ConnectionUser user);
         Task<bool> DeployFilesAsync(IEnumerable<string> files, string deployLocation,
             ConnectionUser user);
+        Task<bool> DeployStreamAsync(Stream stream, string deployLocation, ConnectionUser user);
     }
 }

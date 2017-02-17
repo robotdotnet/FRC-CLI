@@ -11,6 +11,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using Newtonsoft.Json;
+using FRC.CLI.Base.Enums;
+using Renci.SshNet;
 
 namespace FRC.CLI.Common.Test
 {
@@ -206,6 +208,61 @@ C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libwpiuti
                 var filesFromJson = sut.ReadFilesFromStream(memStream).ToList(); 
 
                 Assert.True(filesFromJson.Count == 0);//(testVals, toDeploy);
+            }
+        }
+
+        [Fact]
+        public async Task TestDeployNativeFiles()
+        {
+            using (var mock = AutoMock.GetStrict())
+            {
+                mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
+                
+                IEnumerable<string> filesToDeploy = null;
+                string deployLoc = null;
+                ConnectionUser conn = (ConnectionUser)5;
+
+                var fProvider = mock.Mock<IFileDeployerProvider>().Setup(x => x.DeployFilesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), 
+                    It.IsAny<ConnectionUser>())).Callback<IEnumerable<string>, string, ConnectionUser>((f, p, u) => {
+                        filesToDeploy = f;
+                        deployLoc = p;
+                        conn = u;
+                    }).ReturnsAsync(true);
+
+                string command = null;
+                ConnectionUser conn2 = (ConnectionUser)5;
+
+                mock.Mock<IFileDeployerProvider>().Setup(x => x.RunCommandAsync(It.IsAny<string>(), 
+                    It.IsAny<ConnectionUser>())).Callback<string, ConnectionUser>((p, u) => {
+                        command = p;
+                        conn2 = u;
+                    }).ReturnsAsync(null);
+
+                var m = mock.Mock<IWPILibNativeDeploySettingsProvider>().SetupGet(x => x.NativeDeployLocation).Returns("/usr/local/frc/lib");
+
+                var sut = mock.Create<NativeContentDeploymentProvider>();
+
+                List<string> depFiles = new List<string>
+                {
+                    "Hello",
+                    "World",
+                    "555",
+                    "Timers"
+                };
+
+                await sut.DeployNativeFilesAsync(depFiles);
+
+                mock.Mock<IFileDeployerProvider>().Verify(x => x.DeployFilesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), 
+                    It.IsAny<ConnectionUser>()), Times.Once);
+
+                mock.Mock<IFileDeployerProvider>().Verify(x => x.RunCommandAsync(It.IsAny<string>(), 
+                    It.IsAny<ConnectionUser>()), Times.Once);
+
+                Assert.Equal("ldconfig", command);
+                Assert.Equal(depFiles, filesToDeploy);
+                Assert.Equal(ConnectionUser.Admin, conn);
+                Assert.Equal(ConnectionUser.Admin, conn2);
+                Assert.Equal("/usr/local/frc/lib", deployLoc);
             }
         }
     }
