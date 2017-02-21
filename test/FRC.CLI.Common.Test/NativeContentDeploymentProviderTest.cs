@@ -19,7 +19,7 @@ namespace FRC.CLI.Common.Test
     public class NativeContentDeploymentProviderTest
     {
         [Fact]
-        public async Task TestGetFilesToUpdateListMatching()
+        public void TestGetFilesToUpdateListMatching()
         {
             using (var mock = AutoMock.GetStrict())
             {

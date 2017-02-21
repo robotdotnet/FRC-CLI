@@ -134,5 +134,95 @@ namespace FRC.CLI.Common.Test
             }
         }
         */
+
+        [Fact]
+        public async Task TestGetAllowedImageVersionsAsyncValid()
+        {
+            using (var mock = AutoMock.GetStrict())
+            {
+                mock.Mock<INativeContentDeploymentProvider>()
+                    .Setup(x => x.NativeDirectory)
+                    .Returns(NativeContentDeploymentProvider.NativeDirectoryFolder);
+
+                mock.Mock<IProjectInformationProvider>().Setup(x => x.GetProjectBuildDirectoryAsync())
+                    .ReturnsAsync("buildRoot");
+                
+                mock.Mock<IFileReaderProvider>().Setup(x => x.ReadFileAsStringAsync(It.IsAny<string>()))
+                    .ReturnsAsync(
+@"{
+  ""AllowedImages"": [
+    ""FRC_roboRIO_2017_v8""
+  ]
+}
+");
+
+                var sut = mock.Create<WPILibImageSettingsProvider>();
+
+                var result = await sut.GetAllowedImageVersionsAsync();
+
+                Assert.True(result.Count() == 1);
+                Assert.Contains("FRC_roboRIO_2017_v8", result);
+            }
+        }
+
+        [Fact]
+        public async Task TestGetAllowedImageVersionsMissingFile()
+        {
+            using (var mock = AutoMock.GetStrict())
+            {
+                mock.Mock<INativeContentDeploymentProvider>()
+                    .Setup(x => x.NativeDirectory)
+                    .Returns(NativeContentDeploymentProvider.NativeDirectoryFolder);
+
+                mock.Mock<IProjectInformationProvider>().Setup(x => x.GetProjectBuildDirectoryAsync())
+                    .ReturnsAsync("buildRoot");
+                
+                mock.Mock<IFileReaderProvider>().Setup(x => x.ReadFileAsStringAsync(It.IsAny<string>()))
+                    .Throws(new IOException());
+
+                mock.Mock<IExceptionThrowerProvider>().Setup(x => x.ThrowException(It.IsAny<string>()))
+                    .Returns<string>((s) => new TestException(s));
+
+                var sut = mock.Create<WPILibImageSettingsProvider>();
+
+                var result = await Assert.ThrowsAsync<TestException>(async () => await sut.GetAllowedImageVersionsAsync());
+
+                Assert.NotNull(result);
+                Assert.NotNull(result.Msg);
+            }
+        }
+
+        [Fact]
+        public async Task TestGetAllowedImageVersionsBadJson()
+        {
+            using (var mock = AutoMock.GetStrict())
+            {
+                mock.Mock<INativeContentDeploymentProvider>()
+                    .Setup(x => x.NativeDirectory)
+                    .Returns(NativeContentDeploymentProvider.NativeDirectoryFolder);
+
+                mock.Mock<IProjectInformationProvider>().Setup(x => x.GetProjectBuildDirectoryAsync())
+                    .ReturnsAsync("buildRoot");
+                
+                mock.Mock<IFileReaderProvider>().Setup(x => x.ReadFileAsStringAsync(It.IsAny<string>()))
+                    .ReturnsAsync(
+@"{
+  ""999"": [
+    ""FRC_roboRIO_2017_v8""
+  ]
+}
+");
+
+                mock.Mock<IExceptionThrowerProvider>().Setup(x => x.ThrowException(It.IsAny<string>()))
+                    .Returns<string>((s) => new TestException(s));
+
+                var sut = mock.Create<WPILibImageSettingsProvider>();
+
+                var result = await Assert.ThrowsAsync<TestException>(async () => await sut.GetAllowedImageVersionsAsync());
+
+                Assert.NotNull(result);
+                Assert.NotNull(result.Msg);
+            }
+        }
     }
 }
