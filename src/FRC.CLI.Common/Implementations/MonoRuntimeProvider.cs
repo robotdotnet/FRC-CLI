@@ -36,10 +36,8 @@ namespace FRC.CLI.Common.Implementations
             m_outputWriter = outputWriter;
         }
 
-        public virtual async Task DownloadToFileAsync(string url, string directory, string fileName)
+        public virtual async Task DownloadToFileAsync(string url, string file)
         {
-            Directory.CreateDirectory(directory);
-            string file = Path.Combine(directory, fileName);
             await m_outputWriter.WriteLineAsync($"Writing file to: {file}");
             using (var writeStream = File.Open(file, FileMode.Create))
             {
@@ -51,7 +49,7 @@ namespace FRC.CLI.Common.Implementations
         public async System.Threading.Tasks.Task DownladRuntimeAsync()
         {
             await m_outputWriter.WriteLineAsync("Downloading Mono Runtime");
-            string monoFolder = await GetMonoFolder();
+            string monoFolder = await GetMonoFolderAsync();
             string monoFilePath = Path.Combine(monoFolder, MonoVersion);
             if (await m_md5HashCheckerProvider.VerifyMd5Hash(monoFilePath, MonoMd5))
             {
@@ -59,14 +57,16 @@ namespace FRC.CLI.Common.Implementations
                 await m_outputWriter.WriteLineAsync("Runtime already downloaded. Skipping...");
                 return;
             }
-            await DownloadToFileAsync(MonoUrl + MonoVersion, monoFolder, MonoVersion);
+            Directory.CreateDirectory(monoFolder);
+            string file = Path.Combine(monoFolder, MonoVersion);
+            await DownloadToFileAsync(MonoUrl + MonoVersion, file);
             if (!await m_md5HashCheckerProvider.VerifyMd5Hash(monoFilePath, MonoMd5))
             {
                 throw m_exceptionThrowerProvider.ThrowException("Mono file not downloaded successfully");
             }
         }
 
-        private async Task<string> GetMonoFolder()
+        public virtual async Task<string> GetMonoFolderAsync()
         {
             var wpilibFolder = await m_wpilibUserFolderResolver.GetWPILibUserFolderAsync();
             var monoFolder = Path.Combine(wpilibFolder, "mono");
@@ -75,12 +75,12 @@ namespace FRC.CLI.Common.Implementations
 
         public async System.Threading.Tasks.Task InstallRuntimeAsync()
         {
-            string monoFolder = await GetMonoFolder();
+            string monoFolder = await GetMonoFolderAsync();
             string monoFilePath = Path.Combine(monoFolder, MonoVersion);
             await InstallRuntimeAsync(monoFilePath);
         }
 
-        public async Task InstallRuntimeAsync(string location)
+        public virtual async Task InstallRuntimeAsync(string location)
         {
             await m_outputWriter.WriteLineAsync("Installing Mono Runtime");
             if (!await m_md5HashCheckerProvider.VerifyMd5Hash(location, MonoMd5))
