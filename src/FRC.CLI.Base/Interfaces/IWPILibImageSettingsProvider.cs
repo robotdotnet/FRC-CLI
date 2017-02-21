@@ -5,6 +5,6 @@ namespace FRC.CLI.Base.Interfaces
 {
     public interface IWPILibImageSettingsProvider
     {
-         Task<IList<string>> GetAllowedImageVersionsAsync();
+         Task<IEnumerable<string>> GetAllowedImageVersionsAsync();
     }
 }

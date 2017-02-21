@@ -9,6 +9,6 @@ namespace FRC.CLI.Base.Interfaces
 
         Task<string> GetCurrentRoboRioImageAsync();
 
-        Task<IList<string>> GetAllowedRoboRioImagesAsync();
+        Task<IEnumerable<string>> GetAllowedRoboRioImagesAsync();
     }
 }

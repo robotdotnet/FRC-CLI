@@ -26,14 +26,30 @@ namespace FRC.CLI.Common.Implementations
             m_fileReaderProvider = fileReaderProvider;
         }
 
+        public IEnumerable<string> ParseStringToJson(string json)
+        {
+            var definition = new {
+                AllowedImages = new string[0]
+            };
+            JsonSerializerSettings settings = new JsonSerializerSettings();
+            settings.MissingMemberHandling = MissingMemberHandling.Error;
+            settings.NullValueHandling = NullValueHandling.Ignore;
+            var settingsStore = JsonConvert.DeserializeAnonymousType(json, definition, settings);
+            return settingsStore.AllowedImages;
+        }
 
-        public async Task<IList<string>> GetAllowedImageVersionsAsync()
+        public virtual string GetCombinedFilePath(string buildLocation)
+        {
+            string nativeFolder = Path.Combine(buildLocation, m_nativeContentDeploymentProvider.NativeDirectory);
+            string settingsFile = Path.Combine(nativeFolder, JsonFileName);
+            return settingsFile;
+        }
+
+        public async Task<IEnumerable<string>> GetAllowedImageVersionsAsync()
         {
             string buildLocation = await m_projectInformationProvider.GetProjectBuildDirectoryAsync().ConfigureAwait(false);
 
-            string nativeFolder = Path.Combine(buildLocation, m_nativeContentDeploymentProvider.NativeDirectory);
-
-            string settingsFile = Path.Combine(nativeFolder, JsonFileName);
+            string settingsFile = GetCombinedFilePath(buildLocation);
 
             string json = null;
 
@@ -46,17 +62,9 @@ namespace FRC.CLI.Common.Implementations
                 throw m_exceptionThrowerProvider.ThrowException($"Failed to read settings file at {settingsFile}");
             }
 
-            var definition = new {
-                AllowedImages = new string[0]
-            };
-
             try
             {
-                var settingsStore = await Task.Run(() =>
-                {
-                    return JsonConvert.DeserializeAnonymousType(json, definition);
-                }).ConfigureAwait(false);
-                return settingsStore.AllowedImages;
+                return ParseStringToJson(json);
             }
             catch (JsonSerializationException)
             {

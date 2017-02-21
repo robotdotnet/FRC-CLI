@@ -29,7 +29,7 @@ namespace FRC.CLI.Common.Implementations
         public async Task CheckCorrectImageAsync()
         {
             string currentImage = await GetCurrentRoboRioImageAsync().ConfigureAwait(false);
-            IList<string> allowedImages = await GetAllowedRoboRioImagesAsync().ConfigureAwait(false);
+            IEnumerable<string> allowedImages = await GetAllowedRoboRioImagesAsync().ConfigureAwait(false);
             if (!allowedImages.Contains(currentImage))
             {
                 StringBuilder builder = new StringBuilder();
@@ -43,7 +43,7 @@ namespace FRC.CLI.Common.Implementations
             }
         }
 
-        public async Task<IList<string>> GetAllowedRoboRioImagesAsync()
+        public async Task<IEnumerable<string>> GetAllowedRoboRioImagesAsync()
         {
             return await m_wpilibImageSettingsProvider.GetAllowedImageVersionsAsync().ConfigureAwait(false);
         }
