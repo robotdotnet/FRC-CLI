@@ -47,8 +47,16 @@ namespace FRC.CLI.Common.Implementations
                 await m_outputWriter.WriteLineAsync("Runtime already downloaded. Skipping...");
                 return;
             }
-            await m_fileDownloadProvider.DownloadFileToFileAsync(MonoUrl + MonoVersion,
-                monoFolder, MonoVersion);
+            Directory.CreateDirectory(monoFolder);
+            string file = Path.Combine(monoFolder, MonoVersion);
+            await m_outputWriter.WriteLineAsync($"Writing file to: {file}");
+            using (var writeStream = File.Open(file, FileMode.Create))
+            {
+                await m_fileDownloadProvider.DownloadFileToStreamAsync(
+                    MonoUrl + MonoVersion, writeStream);
+            }
+            //await m_fileDownloadProvider.DownloadFileToFileAsync(MonoUrl + MonoVersion,
+                //monoFolder, MonoVersion);
             if (!await m_md5HashCheckerProvider.VerifyMd5Hash(monoFilePath, MonoMd5))
             {
                 throw m_exceptionThrowerProvider.ThrowException("Mono file not downloaded successfully");

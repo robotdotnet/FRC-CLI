@@ -10,6 +10,8 @@ namespace FRC.CLI.Common.Implementations
         IOutputWriter m_outputWriter;
         IExceptionThrowerProvider m_exceptionThrowerProvider;
 
+        public HttpMessageHandler MessageHandler { get; set; }
+
         public HttpClientFileDownloadProvider(IOutputWriter outputWriter,
             IExceptionThrowerProvider exceptionThrowerProvider)
         {
@@ -17,31 +19,12 @@ namespace FRC.CLI.Common.Implementations
             m_exceptionThrowerProvider = exceptionThrowerProvider;
         }
 
-        public async Task DownloadFileToFileAsync(string url, string outputLocation, string outputFileName)
-        {
-            await m_outputWriter.WriteLineAsync($"Downloading file: {url}");
-            using (HttpClient client = new HttpClient())
-            {
-                using (HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
-                {
-                    using (var readStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                    {
-                        Directory.CreateDirectory(outputLocation);
-                        string file = Path.Combine(outputLocation, outputFileName);
-                        await m_outputWriter.WriteLineAsync($"Writing file to: {file}");
-                        using (var writeStream = File.Open(file, FileMode.Create))
-                        {
-                            await readStream.CopyToAsync(writeStream).ConfigureAwait(false);
-                        }
-                    }
-                }
-            }
-        }
-
         public async Task DownloadFileToStreamAsync(string url, Stream outputStream)
         {
             await m_outputWriter.WriteLineAsync($"Downloading file to stream: {url}");
-            using (HttpClient client = new HttpClient())
+            using (HttpClient client = 
+                MessageHandler == null ? new HttpClient()
+                                       : new HttpClient(MessageHandler))
             {
                 using (HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
                 {
