@@ -1,12 +1,13 @@
 using System.Threading.Tasks;
 using Autofac;
 using FRC.CLI.Base.Interfaces;
+using FRC.CLI.Common.Implementations;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 
 namespace dotnet_frc
 {
-    class MonoCommand : FrcSubCommandBase
+    class RuntimeCommand : FrcSubCommandBase
     {
 
         private CommandOption _downloadOption;
@@ -15,10 +16,10 @@ namespace dotnet_frc
 
         public static DotNetSubCommandBase Create()
         {
-            var command = new MonoCommand
+            var command = new RuntimeCommand
             {
-                Name = "mono",
-                Description = "Installs mono on the robot",
+                Name = "runtime",
+                Description = "Installs the runtime on the robot",
                 HandleRemainingArguments = false
             };
 
@@ -26,19 +27,19 @@ namespace dotnet_frc
 
             command._downloadOption = command.Option(
                 "-d|--download",
-                "Download mono",
+                "Download the runtime",
                 CommandOptionType.NoValue
             );
 
             command._installOption = command.Option(
                 "-i|--install",
-                "Install mono",
+                "Install the runtime",
                 CommandOptionType.NoValue
             );
 
             command._locationOption = command.Option(
                 "-l|--location",
-                "Local mono location",
+                "Local runtime location",
                 CommandOptionType.SingleValue
             );
 
@@ -49,7 +50,8 @@ namespace dotnet_frc
         {
             var builder = new ContainerBuilder();
             AutoFacUtilites.AddCommonServicesToContainer(builder, fileOrDirectory, this,
-                false);            
+                false);
+            builder.RegisterType<MonoRuntimeProvider>().As<IRuntimeProvider>();
             var container = builder.Build();
 
             using (var scope = container.BeginLifetimeScope())

@@ -34,8 +34,7 @@ namespace dotnet_frc
             builder.Register(c => new DotNetBuildSettingsProvider(debug, command._verboseOption.HasValue())).As<IBuildSettingsProvider>();    
             builder.RegisterType<DotNetWPILibUserFolderResolver>().As<IWPILibUserFolderResolver>();
             builder.RegisterType<HttpClientFileDownloadProvider>().As<IFileDownloadProvider>();
-            builder.RegisterType<RemotePackageInstallerProvider>().As<IRemotePackageInstallerProvider>();
-            builder.RegisterType<MonoRuntimeProvider>().As<IRuntimeProvider>();
+            builder.RegisterType<RemotePackageInstallerProvider>().As<IRemotePackageInstallerProvider>();  
             builder.RegisterType<Md5HashCheckerProvider>().As<IMd5HashCheckerProvider>();
             builder.RegisterType<HttpPostRequestProvider>().As<IPostRequestProvider>();
             builder.RegisterType<FileReaderProvider>().As<IFileReaderProvider>();

@@ -21,7 +21,7 @@ namespace dotnet_frc
                 DeployCommand.Create,
                 KillCommand.Create,
                 SettingsCommand.Create,
-                MonoCommand.Create
+                RuntimeCommand.Create
             };
 
         public static int Run(string[] args)
