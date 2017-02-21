@@ -36,6 +36,18 @@ namespace FRC.CLI.Common.Implementations
             m_outputWriter = outputWriter;
         }
 
+        public virtual async Task DownloadToFileAsync(string url, string directory, string fileName)
+        {
+            Directory.CreateDirectory(directory);
+            string file = Path.Combine(directory, fileName);
+            await m_outputWriter.WriteLineAsync($"Writing file to: {file}");
+            using (var writeStream = File.Open(file, FileMode.Create))
+            {
+                await m_fileDownloadProvider.DownloadFileToStreamAsync(
+                    url, writeStream);
+            }
+        }
+
         public async System.Threading.Tasks.Task DownladRuntimeAsync()
         {
             await m_outputWriter.WriteLineAsync("Downloading Mono Runtime");
@@ -47,16 +59,7 @@ namespace FRC.CLI.Common.Implementations
                 await m_outputWriter.WriteLineAsync("Runtime already downloaded. Skipping...");
                 return;
             }
-            Directory.CreateDirectory(monoFolder);
-            string file = Path.Combine(monoFolder, MonoVersion);
-            await m_outputWriter.WriteLineAsync($"Writing file to: {file}");
-            using (var writeStream = File.Open(file, FileMode.Create))
-            {
-                await m_fileDownloadProvider.DownloadFileToStreamAsync(
-                    MonoUrl + MonoVersion, writeStream);
-            }
-            //await m_fileDownloadProvider.DownloadFileToFileAsync(MonoUrl + MonoVersion,
-                //monoFolder, MonoVersion);
+            await DownloadToFileAsync(MonoUrl + MonoVersion, monoFolder, MonoVersion);
             if (!await m_md5HashCheckerProvider.VerifyMd5Hash(monoFilePath, MonoMd5))
             {
                 throw m_exceptionThrowerProvider.ThrowException("Mono file not downloaded successfully");
