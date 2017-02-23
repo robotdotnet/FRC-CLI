@@ -3,7 +3,7 @@ namespace FRC.CLI.Common
     public static class DeployProperties
     {
         public const string UserName = "lvuser";
-        public const string DeployDir = "/home/lvuser/mono";
+        public const string DeployDir = "/home/lvuser/dotnet";
         public const string DeployKillCommand =
             ". /etc/profile.d/natinst-path.sh; /usr/local/frc/bin/frcKillRobot.sh -t -r;";
             

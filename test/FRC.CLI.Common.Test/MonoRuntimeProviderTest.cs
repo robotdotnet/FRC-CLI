@@ -17,7 +17,6 @@ namespace FRC.CLI.Common.Test
 {
     public class MonoRuntimeProviderTest
     {
-        //using (var mock = AutoMock.GetStrict())
         [Fact]
         public async Task TestDownloadToFileAsync()
         {

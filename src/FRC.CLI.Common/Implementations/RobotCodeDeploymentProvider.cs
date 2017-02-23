@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FRC.CLI.Base.Enums;
 using FRC.CLI.Base.Interfaces;
+using FRC.CLI.Base.Models;
 
 namespace FRC.CLI.Common.Implementations
 {
@@ -33,6 +34,28 @@ namespace FRC.CLI.Common.Implementations
             m_frcSettingsProvider = frcSettingsProvider;
             m_fileDeployerProvider = fileDeployerProvider;
             m_exceptionThrowerProvider = exceptionThrowerProvider;
+        }
+
+        private async Task EnsureRemoteDirectoryExists(string directory)
+        {
+            bool verbose = m_buildSettingsProvider.Verbose;
+            if (verbose)
+            {
+                await m_outputWriter.WriteLineAsync("Creating Code Deploy Directory").ConfigureAwait(false);
+            }
+            // Ensure output directory exists
+            await m_fileDeployerProvider.RunCommandAsync($"mkdir -p {DeployProperties.DeployDir}", ConnectionUser.LvUser).ConfigureAwait(false);
+        }
+
+        public virtual IEnumerable<string> GetListOfFilesToDeploy(IEnumerable<string> allFiles, 
+            FrcSettings frcSettings, IEnumerable<string> ignoreDirectories,
+            IEnumerable<string> ignoreFiles)
+        {
+            List<string> settingsIgnoreFiles = frcSettings?.DeployIgnoreFiles ?? new List<string>();
+            return allFiles.Where(x => !ignoreDirectories.Any(x.Contains))
+                           .Where(x => !ignoreFiles.Any(x.Contains))
+                           .Where(x => !settingsIgnoreFiles.Any(x.Contains));
+
         }
 
         public async Task DeployRobotCodeAsync()
