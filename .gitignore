@@ -11,3 +11,4 @@ bld/
 Artifacts/
 tools/
 TestResults/
+*.suo

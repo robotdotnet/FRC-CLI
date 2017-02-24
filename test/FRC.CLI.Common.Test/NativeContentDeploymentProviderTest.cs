@@ -218,14 +218,12 @@ C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libwpiuti
             {
                 mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
                 
-                IEnumerable<string> filesToDeploy = null;
-                string deployLoc = null;
+                IEnumerable<(string, string)> filesToDeploy = null;
                 ConnectionUser conn = (ConnectionUser)5;
 
-                var fProvider = mock.Mock<IFileDeployerProvider>().Setup(x => x.DeployFilesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), 
-                    It.IsAny<ConnectionUser>())).Callback<IEnumerable<string>, string, ConnectionUser>((f, p, u) => {
+                var fProvider = mock.Mock<IFileDeployerProvider>().Setup(x => x.DeployFilesAsync(It.IsAny<IEnumerable<(string, string)>>(),
+                    It.IsAny<ConnectionUser>())).Callback<IEnumerable<(string, string)>, ConnectionUser>((f, u) => {
                         filesToDeploy = f;
-                        deployLoc = p;
                         conn = u;
                     }).ReturnsAsync(true);
 
@@ -252,17 +250,17 @@ C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libwpiuti
 
                 await sut.DeployNativeFilesAsync(depFiles);
 
-                mock.Mock<IFileDeployerProvider>().Verify(x => x.DeployFilesAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<string>(), 
+                mock.Mock<IFileDeployerProvider>().Verify(x => x.DeployFilesAsync(It.IsAny<IEnumerable<(string, string)>>(), 
                     It.IsAny<ConnectionUser>()), Times.Once);
 
                 mock.Mock<IFileDeployerProvider>().Verify(x => x.RunCommandAsync(It.IsAny<string>(), 
                     It.IsAny<ConnectionUser>()), Times.Once);
 
                 Assert.Equal("ldconfig", command);
-                Assert.Equal(depFiles, filesToDeploy);
+                Assert.Equal(depFiles.Select(x => (x, "/usr/local/frc/lib")), filesToDeploy);
                 Assert.Equal(ConnectionUser.Admin, conn);
                 Assert.Equal(ConnectionUser.Admin, conn2);
-                Assert.Equal("/usr/local/frc/lib", deployLoc);
+                //Assert.Equal("/usr/local/frc/lib", deployLoc);
             }
         }
     }

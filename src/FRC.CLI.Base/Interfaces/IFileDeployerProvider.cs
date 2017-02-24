@@ -12,10 +12,10 @@ namespace FRC.CLI.Base.Interfaces
     {
         bool Connected { get; }
         Task<IPAddress> GetConnectionIpAsync();
-        Task<Dictionary<string, SshCommand>> RunCommandsAsync(IList<string> commands, ConnectionUser user);
+        Task<Dictionary<string, SshCommand>> RunCommandsAsync(IEnumerable<string> commands, ConnectionUser user);
         Task<SshCommand> RunCommandAsync(string command, ConnectionUser user);
         Task<bool> ReceiveFileAsync(string remoteFile, Stream receiveStream, ConnectionUser user);
-        Task<bool> DeployFilesAsync(IEnumerable<string> files, string deployLocation,
+        Task<bool> DeployFilesAsync(IEnumerable<(string localFile, string remoteLocation)> files,
             ConnectionUser user);
         Task<bool> DeployStreamAsync(Stream stream, string deployLocation, ConnectionUser user);
     }

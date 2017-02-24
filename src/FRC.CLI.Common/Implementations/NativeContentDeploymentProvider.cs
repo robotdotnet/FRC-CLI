@@ -139,8 +139,8 @@ namespace FRC.CLI.Common.Implementations
 
         public async Task DeployNativeFilesAsync(IEnumerable<string> files)
         {
-            bool nativeDeploy = await m_fileDeployerProvider.DeployFilesAsync(files, 
-                m_wpilibNativeDeploySettingsProvider.NativeDeployLocation, ConnectionUser.Admin).ConfigureAwait(false);
+            bool nativeDeploy = await m_fileDeployerProvider.DeployFilesAsync(files.Select(x => (x, m_wpilibNativeDeploySettingsProvider.NativeDeployLocation)), 
+                ConnectionUser.Admin).ConfigureAwait(false);
             await m_fileDeployerProvider.RunCommandAsync("ldconfig", ConnectionUser.Admin).ConfigureAwait(false);
 
             if (!nativeDeploy)

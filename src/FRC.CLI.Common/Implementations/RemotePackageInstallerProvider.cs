@@ -47,11 +47,8 @@ namespace FRC.CLI.Common.Implementations
             {
                 await m_outputWriter.WriteLineAsync("Creating Opkg Directory").ConfigureAwait(false);
             }
-
-            await m_fileDeployerProvider.RunCommandAsync($"mkdir -p {RoboRioOpgkLocation}",
-                            ConnectionUser.Admin).ConfigureAwait(false);
             
-            var ret = await m_fileDeployerProvider.DeployFilesAsync(new string[] {localFile}, RoboRioOpgkLocation,
+            var ret = await m_fileDeployerProvider.DeployFilesAsync(new (string, string)[] {(localFile, RoboRioOpgkLocation)},
                             ConnectionUser.Admin).ConfigureAwait(false);
 
             if (!ret)

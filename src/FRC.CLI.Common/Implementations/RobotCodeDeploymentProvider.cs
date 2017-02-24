@@ -74,11 +74,18 @@ namespace FRC.CLI.Common.Implementations
             List<string> ignoreFiles = (await m_frcSettingsProvider.GetFrcSettingsAsync()
                 .ConfigureAwait(false))
                 ?.DeployIgnoreFiles;
-            var files = Directory.GetFiles(buildDir).Where(x => !x.Contains(nativeDir))
+            var files = Directory.GetFiles(buildDir, "*", SearchOption.AllDirectories).Where(x => !x.Contains(nativeDir))
                                                     .Where(f => !DeployProperties.IgnoreFiles.Any(f.Contains))
-                                                    .Where(f => !ignoreFiles.Any(f.Contains));
+                                                    .Where(f => !ignoreFiles.Any(f.Contains))
+                                                    .Select(x =>
+                                                    {
+                                                        var path = Path.GetDirectoryName(x);
+                                                        string split = path.Substring(buildDir.Length);
+                                                        split = split.Replace('\\', '/');
+                                                        return (x, $"{DeployProperties.DeployDir}{split}");
+                                                    });
             // Deploy all files
-            if (!await m_fileDeployerProvider.DeployFilesAsync(files, DeployProperties.DeployDir, ConnectionUser.LvUser))
+            if (!await m_fileDeployerProvider.DeployFilesAsync(files, ConnectionUser.LvUser))
             {
                 throw m_exceptionThrowerProvider.ThrowException("Failed to deploy robot files");
             }

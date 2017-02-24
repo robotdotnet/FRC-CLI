@@ -283,16 +283,19 @@ namespace FRC.CLI.Common.Connections
             return true;
         }
 
-        public async Task<bool> DeployFilesAsync(IEnumerable<string> files, string deployLocation, ConnectionUser user)
+        public async Task<bool> DeployFilesAsync(IEnumerable<(string localFile, string remoteLocation)> files, ConnectionUser user)
         {
             await CreateConnectionAsync().ConfigureAwait(false);
             ScpClient scp;
+            SshClient ssh;
             switch (user)
             {
                 case ConnectionUser.Admin:
                     scp = m_scpAdminClient;
+                    ssh = m_sshAdminClient;
                     break;
                 case ConnectionUser.LvUser:
+                    ssh = m_sshUserClient;
                     scp = m_scpUserClient;
                     break;
                 default:
@@ -300,13 +303,29 @@ namespace FRC.CLI.Common.Connections
             }
 
             bool verbose = m_buildSettingsProvider.Verbose;
-            foreach (FileInfo fileInfo in from string s in files where File.Exists(s) select new FileInfo(s))
+            var fileList = files.ToList();
+            var directories = fileList.Select(x => x.remoteLocation).Distinct();
+            foreach(var dir in directories)
             {
                 if (verbose)
                 {
-                    await m_outputWriter.WriteLineAsync($"Deploying File: {fileInfo.Name}").ConfigureAwait(false);
+                    await m_outputWriter.WriteLineAsync($"Creating directory {dir}");
                 }
-                await Task.Run(() => scp.Upload(fileInfo, deployLocation)).ConfigureAwait(false);
+                await Task.Run(() => m_sshUserClient.RunCommand($"mkdir -p {dir}").Dispose()).ConfigureAwait(false);
+            }
+
+            foreach (var file in fileList)
+            {
+                if (!File.Exists(file.localFile))
+                {
+                    // Determine if we want this to throw or not
+                    continue;
+                }
+                if (verbose)
+                {
+                    await m_outputWriter.WriteLineAsync($"Deploying File {file.localFile} to directory {file.remoteLocation}").ConfigureAwait(false);
+                }
+                await Task.Run(() => scp.Upload(new FileInfo(file.localFile), file.remoteLocation)).ConfigureAwait(false);
             }
             return true;
         }
@@ -363,7 +382,7 @@ namespace FRC.CLI.Common.Connections
             }
         }
 
-        public async Task<Dictionary<string, SshCommand>> RunCommandsAsync(IList<string> commands, ConnectionUser user)
+        public async Task<Dictionary<string, SshCommand>> RunCommandsAsync(IEnumerable<string> commands, ConnectionUser user)
         {
             await CreateConnectionAsync().ConfigureAwait(false);
             SshClient ssh;
