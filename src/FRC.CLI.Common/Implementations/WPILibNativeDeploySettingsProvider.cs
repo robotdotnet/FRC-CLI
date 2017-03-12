@@ -9,9 +9,9 @@ namespace FRC.CLI.Common.Implementations
 
         public string NativePropertiesFileName => "WPI_Native_Libraries.properties";
 
-        public IList<string> NativeIgnoreFiles 
+        public IList<string> NativeIgnoreFiles
         {
-            get 
+            get
             {
                 return new List<string>
                 {

@@ -36,7 +36,6 @@ namespace FRC.CLI.Common.Connections
         private IBuildSettingsProvider m_buildSettingsProvider;
         private IExceptionThrowerProvider m_exceptionThrowerProvider;
 
-
         public bool Connected => m_remoteIp != null;
 
         public RoboRioConnection(IOutputWriter outputWriter,
@@ -57,10 +56,7 @@ namespace FRC.CLI.Common.Connections
             {
                 return;
             }
-            AsyncContext.Run(async () =>
-            {
-                await CreateConnectionAsync().ConfigureAwait(false);;
-            });
+            AsyncContext.Run(async () => await CreateConnectionAsync().ConfigureAwait(false));
         }
 
         private async Task CreateConnectionAsync()
@@ -98,7 +94,6 @@ namespace FRC.CLI.Common.Connections
             using (TcpClient lanClient = new TcpClient())
             using (TcpClient ipClient = new TcpClient())
             {
-
                 Task usb = usbClient.ConnectAsync(RoboRioUSBIp, 80);
                 Task mDns = mDnsClient.ConnectAsync(roboRioMDNS, 80);
                 Task lan = lanClient.ConnectAsync(roboRioLan, 80);
@@ -207,7 +202,6 @@ namespace FRC.CLI.Common.Connections
             };
 
             m_lvUserConnectionInfo = new ConnectionInfo(ip.ToString(), "lvuser", pauth, authMethod) { Timeout = m_sshTimeout };
-
 
             m_adminConnectionInfo = new ConnectionInfo(ip.ToString(), "admin", pauthAdmin, authMethodAdmin) { Timeout = m_sshTimeout };
 
@@ -446,7 +440,6 @@ namespace FRC.CLI.Common.Connections
                 return x;
             }).ConfigureAwait(false);
         }
-
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls

@@ -15,7 +15,7 @@ namespace FRC.CLI.Common.Implementations
         private IExceptionThrowerProvider m_exceptionThrowerProvider;
         private IFileDeployerProvider m_fileDeployerProvider;
         private IPostRequestProvider m_postRequestProvider;
-        public RoboRioImageProvider(IWPILibImageSettingsProvider wpilibImageSettingsProvider, 
+        public RoboRioImageProvider(IWPILibImageSettingsProvider wpilibImageSettingsProvider,
             IExceptionThrowerProvider exceptionThrowerProvider,
             IFileDeployerProvider fileDeployerProvider,
             IPostRequestProvider postRequestProvider)
@@ -43,9 +43,9 @@ namespace FRC.CLI.Common.Implementations
             }
         }
 
-        public async Task<IEnumerable<string>> GetAllowedRoboRioImagesAsync()
+        public Task<IEnumerable<string>> GetAllowedRoboRioImagesAsync()
         {
-            return await m_wpilibImageSettingsProvider.GetAllowedImageVersionsAsync().ConfigureAwait(false);
+            return m_wpilibImageSettingsProvider.GetAllowedImageVersionsAsync();
         }
 
         public async Task<string> GetCurrentRoboRioImageAsync()
@@ -57,7 +57,7 @@ namespace FRC.CLI.Common.Implementations
                 new KeyValuePair<string, string>("Items", "system")
             });
             IPAddress connectionIp = await m_fileDeployerProvider.GetConnectionIpAsync().ConfigureAwait(false);
-            var sstring = await m_postRequestProvider.GetPostRequestAsync($"http://{connectionIp.ToString()}/nisysapi/server", 
+            var sstring = await m_postRequestProvider.GetPostRequestAsync($"http://{connectionIp}/nisysapi/server",
                 content).ConfigureAwait(false);
 
             var doc = new XmlDocument();

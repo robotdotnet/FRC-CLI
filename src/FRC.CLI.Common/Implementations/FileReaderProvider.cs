@@ -7,9 +7,9 @@ namespace FRC.CLI.Common.Implementations
 {
     public class FileReaderProvider : IFileReaderProvider
     {
-        public async Task<string> ReadFileAsStringAsync(string file)
+        public Task<string> ReadFileAsStringAsync(string file)
         {
-            return await Task.Run(() => File.ReadAllText(file)).ConfigureAwait(false);
+            return Task.Run(() => File.ReadAllText(file));
         }
     }
 }

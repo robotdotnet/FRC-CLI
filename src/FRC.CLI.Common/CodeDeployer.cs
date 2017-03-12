@@ -27,10 +27,9 @@ namespace FRC.CLI.Common
             m_robotCodeDeploymentProvider = robotCodeDeploymentProvider;
             m_nativePackageDeploymentProvider = nativePackageDeploymentProvider;
         }
-        
 
         public async Task DeployCode()
-        {                
+        {
             // Build code
             await m_codeBuilderProvider.BuildCodeAsync().ConfigureAwait(false);
 
@@ -38,7 +37,6 @@ namespace FRC.CLI.Common
             await m_roboRioImageProvider.CheckCorrectImageAsync().ConfigureAwait(false);
 
             await m_roboRioDependencyCheckerProvider.CheckIfDependenciesAreSatisfiedAsync().ConfigureAwait(false);
-
 
             await m_nativePackageDeploymentProvider.DeployNativeContentAsync().ConfigureAwait(false);
 

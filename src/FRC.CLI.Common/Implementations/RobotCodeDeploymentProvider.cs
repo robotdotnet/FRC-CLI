@@ -36,7 +36,7 @@ namespace FRC.CLI.Common.Implementations
             m_exceptionThrowerProvider = exceptionThrowerProvider;
         }
 
-        private async Task EnsureRemoteDirectoryExists(string directory)
+        private async Task EnsureRemoteDirectoryExists()
         {
             bool verbose = m_buildSettingsProvider.Verbose;
             if (verbose)
@@ -52,10 +52,7 @@ namespace FRC.CLI.Common.Implementations
             IEnumerable<string> ignoreFiles)
         {
             List<string> settingsIgnoreFiles = frcSettings?.DeployIgnoreFiles ?? new List<string>();
-            return allFiles.Where(x => !ignoreDirectories.Any(x.Contains))
-                           .Where(x => !ignoreFiles.Any(x.Contains))
-                           .Where(x => !settingsIgnoreFiles.Any(x.Contains));
-
+            return allFiles.Where(x => !ignoreDirectories.Any(x.Contains) && !ignoreFiles.Any(x.Contains) && !settingsIgnoreFiles.Any(x.Contains));
         }
 
         public async Task DeployRobotCodeAsync()
@@ -75,8 +72,7 @@ namespace FRC.CLI.Common.Implementations
                 .ConfigureAwait(false))
                 ?.DeployIgnoreFiles;
             var files = Directory.GetFiles(buildDir, "*", SearchOption.AllDirectories).Where(x => !x.Contains(nativeDir))
-                                                    .Where(f => !DeployProperties.IgnoreFiles.Any(f.Contains))
-                                                    .Where(f => !ignoreFiles.Any(f.Contains))
+                                                    .Where(f => !DeployProperties.IgnoreFiles.Any(f.Contains) && !ignoreFiles.Any(f.Contains))
                                                     .Select(x =>
                                                     {
                                                         var path = Path.GetDirectoryName(x);

@@ -9,7 +9,7 @@ namespace FRC.CLI.Common.Implementations
     public class WPILibImageSettingsProvider : IWPILibImageSettingsProvider
     {
         public const string JsonFileName = "ImageSettings.json";
-        
+
         private IProjectInformationProvider m_projectInformationProvider;
         private INativeContentDeploymentProvider m_nativeContentDeploymentProvider;
         private IExceptionThrowerProvider m_exceptionThrowerProvider;
@@ -31,9 +31,11 @@ namespace FRC.CLI.Common.Implementations
             var definition = new {
                 AllowedImages = new string[0]
             };
-            JsonSerializerSettings settings = new JsonSerializerSettings();
-            settings.MissingMemberHandling = MissingMemberHandling.Error;
-            settings.NullValueHandling = NullValueHandling.Ignore;
+            var settings = new JsonSerializerSettings()
+            {
+                MissingMemberHandling = MissingMemberHandling.Error,
+                NullValueHandling = NullValueHandling.Ignore
+            };
             var settingsStore = JsonConvert.DeserializeAnonymousType(json, definition, settings);
             return settingsStore.AllowedImages;
         }

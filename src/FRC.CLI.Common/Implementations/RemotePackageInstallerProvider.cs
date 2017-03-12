@@ -37,7 +37,6 @@ namespace FRC.CLI.Common.Implementations
                 throw m_exceptionThrowerProvider.ThrowException($"Could not find file to deploy: {localFile}");
             }
 
-
             await m_outputWriter.WriteLineAsync($"Deploying file: {localFile} to {RoboRioOpgkLocation}").ConfigureAwait(false);
 
             bool verbose = m_buildSettingsProvider.Verbose;

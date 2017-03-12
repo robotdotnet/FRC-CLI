@@ -23,8 +23,7 @@ namespace FRC.CLI.Common.Implementations
 
         public NativeContentDeploymentProvider(IWPILibNativeDeploySettingsProvider wpilibNativeDeploySettingsProvider,
             IProjectInformationProvider projectInformationProvider, IExceptionThrowerProvider exceptionThrowerProvider,
-            IFileDeployerProvider fileDeployerProvider, IOutputWriter outputWriter,
-            IMd5HashCheckerProvider md5HashFileChecker)
+            IFileDeployerProvider fileDeployerProvider, IOutputWriter outputWriter)
         {
             m_wpilibNativeDeploySettingsProvider = wpilibNativeDeploySettingsProvider;
             m_projectInformationProvider = projectInformationProvider;
@@ -53,11 +52,7 @@ namespace FRC.CLI.Common.Implementations
                 try
                 {
                     var retVal = serializer.Deserialize<List<(string, string)>>(jsonReader);
-                    if (retVal == null)
-                    {
-                        return new List<(string, string)>();
-                    }
-                    return retVal;
+                    return retVal ?? new List<(string, string)>();
                 }
                 catch (JsonReaderException)
                 {
@@ -159,7 +154,7 @@ namespace FRC.CLI.Common.Implementations
             writer.Flush();
             memStream.Position = 0;
 
-            await DeployNativeFilesAsync(files.Select(x => x.file)).ConfigureAwait(false);;
+            await DeployNativeFilesAsync(files.Select(x => x.file)).ConfigureAwait(false);
 
             var md5Deploy = await m_fileDeployerProvider.DeployStreamAsync(memStream,
                 $"{m_wpilibNativeDeploySettingsProvider.NativeDeployLocation}/{m_wpilibNativeDeploySettingsProvider.NativePropertiesFileName}",

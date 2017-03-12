@@ -11,17 +11,13 @@ namespace FRC.CLI.Common
         {
             byte[] fileMd5Sum = null;
 
-
             if (File.Exists(fileName))
             {
                 using (FileStream stream = new FileStream(fileName, FileMode.Open))
                 {
                     using (MD5 md5 = MD5.Create())
                     {
-                        await Task.Run(() =>
-                        {
-                            fileMd5Sum = md5.ComputeHash(stream);
-                        }).ConfigureAwait(false);
+                        await Task.Run(() => fileMd5Sum = md5.ComputeHash(stream)).ConfigureAwait(false);
                     }
                 }
             }
