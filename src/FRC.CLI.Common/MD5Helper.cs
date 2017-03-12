@@ -21,7 +21,7 @@ namespace FRC.CLI.Common
                         await Task.Run(() =>
                         {
                             fileMd5Sum = md5.ComputeHash(stream);
-                        });
+                        }).ConfigureAwait(false);
                     }
                 }
             }

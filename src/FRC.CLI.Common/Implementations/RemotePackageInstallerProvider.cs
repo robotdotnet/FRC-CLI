@@ -67,7 +67,7 @@ namespace FRC.CLI.Common.Implementations
                 OpkgInstallCommand
             };
 
-            await m_fileDeployerProvider.RunCommandsAsync(installCommands, ConnectionUser.Admin);
+            await m_fileDeployerProvider.RunCommandsAsync(installCommands, ConnectionUser.Admin).ConfigureAwait(false);
 
             //Removing ipk files from the RoboRIO
             await m_fileDeployerProvider.RunCommandAsync($"rm -rf {RoboRioOpgkLocation}",

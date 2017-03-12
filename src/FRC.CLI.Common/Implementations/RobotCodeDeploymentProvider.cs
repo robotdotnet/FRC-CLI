@@ -60,7 +60,7 @@ namespace FRC.CLI.Common.Implementations
 
         public async Task DeployRobotCodeAsync()
         {
-            await m_outputWriter.WriteLineAsync("Deploying Robot Code Files");
+            await m_outputWriter.WriteLineAsync("Deploying Robot Code Files").ConfigureAwait(false);
             bool verbose = m_buildSettingsProvider.Verbose;
             string buildDir = await m_projectInformationProvider.GetProjectBuildDirectoryAsync().ConfigureAwait(false);
             string nativeDir = Path.Combine(buildDir, m_nativePackageDeploymentProvider.NativeDirectory);
@@ -85,7 +85,7 @@ namespace FRC.CLI.Common.Implementations
                                                         return (x, $"{DeployProperties.DeployDir}{split}");
                                                     });
             // Deploy all files
-            if (!await m_fileDeployerProvider.DeployFilesAsync(files, ConnectionUser.LvUser))
+            if (!await m_fileDeployerProvider.DeployFilesAsync(files, ConnectionUser.LvUser).ConfigureAwait(false))
             {
                 throw m_exceptionThrowerProvider.ThrowException("Failed to deploy robot files");
             }

@@ -113,7 +113,7 @@ namespace FRC.CLI.Common.Connections
 
                 while (tasks.Count != 0)
                 {
-                    var finished = await Task.WhenAny(tasks);
+                    var finished = await Task.WhenAny(tasks).ConfigureAwait(false);
 
                     if (finished == delayTask)
                     {
@@ -154,10 +154,10 @@ namespace FRC.CLI.Common.Connections
                         }
                         else
                         {
-                            bool finishedConnect = await OnConnectionFound(ipEp.Address);
+                            bool finishedConnect = await OnConnectionFound(ipEp.Address).ConfigureAwait(false);
                             if (finishedConnect)
                             {
-                                await m_outputWriter.WriteLineAsync($"Connected to robot at IP Address: {ipEp.Address}");
+                                await m_outputWriter.WriteLineAsync($"Connected to robot at IP Address: {ipEp.Address}").ConfigureAwait(false);
                                 m_remoteIp = ipEp.Address;
                                 return;
                             }
@@ -214,7 +214,7 @@ namespace FRC.CLI.Common.Connections
             bool verbose = m_buildSettingsProvider.Verbose;
 
             if (verbose)
-                await m_outputWriter.WriteLineAsync("Creating lvuser ssh client");
+                await m_outputWriter.WriteLineAsync("Creating lvuser ssh client").ConfigureAwait(false);
             try
             {
                 m_sshUserClient = new SshClient(m_lvUserConnectionInfo);
@@ -230,7 +230,7 @@ namespace FRC.CLI.Common.Connections
             }
 
             if (verbose)
-                await m_outputWriter.WriteLineAsync("Creating lvuser scp client");
+                await m_outputWriter.WriteLineAsync("Creating lvuser scp client").ConfigureAwait(false);
 
             try
             {
@@ -247,7 +247,7 @@ namespace FRC.CLI.Common.Connections
             }
 
             if (verbose)
-                await m_outputWriter.WriteLineAsync("Creating admin ssh client");
+                await m_outputWriter.WriteLineAsync("Creating admin ssh client").ConfigureAwait(false);
 
             try
             {
@@ -264,7 +264,7 @@ namespace FRC.CLI.Common.Connections
             }
 
             if (verbose)
-                await m_outputWriter.WriteLineAsync("Creating admin scp client");
+                await m_outputWriter.WriteLineAsync("Creating admin scp client").ConfigureAwait(false);
 
             try
             {
@@ -309,7 +309,7 @@ namespace FRC.CLI.Common.Connections
             {
                 if (verbose)
                 {
-                    await m_outputWriter.WriteLineAsync($"Creating directory {dir}");
+                    await m_outputWriter.WriteLineAsync($"Creating directory {dir}").ConfigureAwait(false);
                 }
                 await Task.Run(() => m_sshUserClient.RunCommand($"mkdir -p {dir}").Dispose()).ConfigureAwait(false);
             }

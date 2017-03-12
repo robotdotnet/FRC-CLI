@@ -72,7 +72,7 @@ namespace FRC.CLI.Common.Implementations
 
             string buildPath = await m_projectInformationProvider.GetProjectBuildDirectoryAsync().ConfigureAwait(false);
             string nativeLoc = Path.Combine(buildPath, NativeDirectory);
-            var fileMd5List = await GetMd5ForFilesAsync(nativeLoc, m_wpilibNativeDeploySettingsProvider.NativeIgnoreFiles);
+            var fileMd5List = await GetMd5ForFilesAsync(nativeLoc, m_wpilibNativeDeploySettingsProvider.NativeIgnoreFiles).ConfigureAwait(false);
 
             if (fileMd5List == null)
             {
@@ -125,7 +125,7 @@ namespace FRC.CLI.Common.Implementations
             
             foreach (var file in filtered)
             {
-                string hash = await MD5Helper.Md5SumAsync(file);
+                string hash = await MD5Helper.Md5SumAsync(file).ConfigureAwait(false);
                 retFiles.Add((file, hash));
             }
 
@@ -155,7 +155,7 @@ namespace FRC.CLI.Common.Implementations
 
             MemoryStream memStream = new MemoryStream();
             StreamWriter writer = new StreamWriter(memStream);
-            await writer.WriteAsync(jsonString);
+            await writer.WriteAsync(jsonString).ConfigureAwait(false);
             writer.Flush();
             memStream.Position = 0;
 

@@ -21,7 +21,7 @@ namespace FRC.CLI.Common.Implementations
 
         public async Task DownloadFileToStreamAsync(string url, Stream outputStream)
         {
-            await m_outputWriter.WriteLineAsync($"Downloading file to stream: {url}");
+            await m_outputWriter.WriteLineAsync($"Downloading file to stream: {url}").ConfigureAwait(false);
             using (HttpClient client = 
                 MessageHandler == null ? new HttpClient()
                                        : new HttpClient(MessageHandler))

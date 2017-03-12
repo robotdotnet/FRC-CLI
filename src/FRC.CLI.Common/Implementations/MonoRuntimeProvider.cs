@@ -38,29 +38,29 @@ namespace FRC.CLI.Common.Implementations
 
         public virtual async Task DownloadToFileAsync(string url, string file)
         {
-            await m_outputWriter.WriteLineAsync($"Writing file to: {file}");
+            await m_outputWriter.WriteLineAsync($"Writing file to: {file}").ConfigureAwait(false);
             using (var writeStream = File.Open(file, FileMode.Create))
             {
                 await m_fileDownloadProvider.DownloadFileToStreamAsync(
-                    url, writeStream);
+                    url, writeStream).ConfigureAwait(false);
             }
         }
 
         public async System.Threading.Tasks.Task DownladRuntimeAsync()
         {
-            await m_outputWriter.WriteLineAsync("Downloading Mono Runtime");
-            string monoFolder = await GetMonoFolderAsync();
+            await m_outputWriter.WriteLineAsync("Downloading Mono Runtime").ConfigureAwait(false);
+            string monoFolder = await GetMonoFolderAsync().ConfigureAwait(false);
             string monoFilePath = Path.Combine(monoFolder, MonoVersion);
-            if (await m_md5HashCheckerProvider.VerifyMd5Hash(monoFilePath, MonoMd5))
+            if (await m_md5HashCheckerProvider.VerifyMd5Hash(monoFilePath, MonoMd5).ConfigureAwait(false))
             {
                 // File already exists and is correct. No need to redownload
-                await m_outputWriter.WriteLineAsync("Runtime already downloaded. Skipping...");
+                await m_outputWriter.WriteLineAsync("Runtime already downloaded. Skipping...").ConfigureAwait(false);
                 return;
             }
             Directory.CreateDirectory(monoFolder);
             string file = Path.Combine(monoFolder, MonoVersion);
-            await DownloadToFileAsync(MonoUrl + MonoVersion, file);
-            if (!await m_md5HashCheckerProvider.VerifyMd5Hash(monoFilePath, MonoMd5))
+            await DownloadToFileAsync(MonoUrl + MonoVersion, file).ConfigureAwait(false);
+            if (!await m_md5HashCheckerProvider.VerifyMd5Hash(monoFilePath, MonoMd5).ConfigureAwait(false))
             {
                 throw m_exceptionThrowerProvider.ThrowException("Mono file not downloaded successfully");
             }
@@ -68,29 +68,29 @@ namespace FRC.CLI.Common.Implementations
 
         public virtual async Task<string> GetMonoFolderAsync()
         {
-            var wpilibFolder = await m_wpilibUserFolderResolver.GetWPILibUserFolderAsync();
+            var wpilibFolder = await m_wpilibUserFolderResolver.GetWPILibUserFolderAsync().ConfigureAwait(false);
             var monoFolder = Path.Combine(wpilibFolder, "mono");
             return monoFolder;
         }
 
         public async System.Threading.Tasks.Task InstallRuntimeAsync()
         {
-            string monoFolder = await GetMonoFolderAsync();
+            string monoFolder = await GetMonoFolderAsync().ConfigureAwait(false);
             string monoFilePath = Path.Combine(monoFolder, MonoVersion);
-            await InstallRuntimeAsync(monoFilePath);
+            await InstallRuntimeAsync(monoFilePath).ConfigureAwait(false);
         }
 
         public virtual async Task InstallRuntimeAsync(string location)
         {
-            await m_outputWriter.WriteLineAsync("Installing Mono Runtime");
-            if (!await m_md5HashCheckerProvider.VerifyMd5Hash(location, MonoMd5))
+            await m_outputWriter.WriteLineAsync("Installing Mono Runtime").ConfigureAwait(false);
+            if (!await m_md5HashCheckerProvider.VerifyMd5Hash(location, MonoMd5).ConfigureAwait(false))
             {
                 throw m_exceptionThrowerProvider.ThrowException("Mono file could not be verified. Please redownload and try again");
             }
 
-            await m_remotePackageInstallerProvider.InstallZippedPackagesAsync(location);
+            await m_remotePackageInstallerProvider.InstallZippedPackagesAsync(location).ConfigureAwait(false);
             
-            await VerifyRuntimeAsync();
+            await VerifyRuntimeAsync().ConfigureAwait(false);
 
             var command = await m_fileDeployerProvider.RunCommandAsync("setcap cap_sys_nice=pe /usr/bin/mono-sgen",
                 ConnectionUser.Admin).ConfigureAwait(false);
@@ -99,7 +99,7 @@ namespace FRC.CLI.Common.Implementations
             {
                 throw m_exceptionThrowerProvider.ThrowException("Failed to set RealTime capabilities on Mono");
             }
-            await m_outputWriter.WriteLineAsync("Successfully installed Mono Runtime");
+            await m_outputWriter.WriteLineAsync("Successfully installed Mono Runtime").ConfigureAwait(false);
         }
 
         public async System.Threading.Tasks.Task VerifyRuntimeAsync()
@@ -111,7 +111,7 @@ namespace FRC.CLI.Common.Implementations
             {
                 throw m_exceptionThrowerProvider.ThrowException("Mono runtime not installed. Please try reinstalling");
             }
-            await m_outputWriter.WriteLineAsync("Mono runtime correctly installed");
+            await m_outputWriter.WriteLineAsync("Mono runtime correctly installed").ConfigureAwait(false);
         }
     }
 }
