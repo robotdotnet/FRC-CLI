@@ -47,7 +47,7 @@ namespace FRC.CLI.Common.Implementations
             await m_fileDeployerProvider.RunCommandAsync($"mkdir -p {DeployProperties.DeployDir}", ConnectionUser.LvUser).ConfigureAwait(false);
         }
 
-        public virtual IEnumerable<string> GetListOfFilesToDeploy(IEnumerable<string> allFiles, 
+        public virtual IEnumerable<string> GetListOfFilesToDeploy(IEnumerable<string> allFiles,
             FrcSettings frcSettings, IEnumerable<string> ignoreDirectories,
             IEnumerable<string> ignoreFiles)
         {
@@ -106,7 +106,7 @@ namespace FRC.CLI.Common.Implementations
             //Combining all other commands, since they should be safe running together.
             List<string> commands = new List<string>();
             string robotName = await m_projectInformationProvider.GetProjectExecutableNameAsync().ConfigureAwait(false);
-            
+
             string deployedCmd;
             string deployedCmdFrame;
 
@@ -122,7 +122,7 @@ namespace FRC.CLI.Common.Implementations
                 deployedCmd = string.Format(DeployProperties.RobotCommand, robotName);
                 deployedCmdFrame = DeployProperties.RobotCommandFileName;
             }
-            
+
             List<string> requestedArguments = (await m_frcSettingsProvider.GetFrcSettingsAsync()
                 .ConfigureAwait(false))
                 ?.CommandLineArguments;
@@ -151,7 +151,7 @@ namespace FRC.CLI.Common.Implementations
             await m_fileDeployerProvider.RunCommandsAsync(commands.ToArray(), ConnectionUser.LvUser).ConfigureAwait(false);
 
             //Run start command individually so we can chec to make sure everything works.
-            var codeRet = await m_fileDeployerProvider.RunCommandAsync(DeployProperties.DeployKillCommand, 
+            var codeRet = await m_fileDeployerProvider.RunCommandAsync(DeployProperties.DeployKillCommand,
                 ConnectionUser.LvUser).ConfigureAwait(false);
             if (codeRet.ExitStatus != 0)
             {

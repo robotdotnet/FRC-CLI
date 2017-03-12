@@ -12,8 +12,8 @@ namespace dotnet_frc
         protected override string CommandName => "frc";
         protected override string FullCommandNameLocalized => ".NET FRC Utility";
         protected override string ArgumentName => Constants.ProjectArgumentName;
-        protected override string ArgumentDescriptionLocalized => 
-            "The project file to operate on. If a file is not specified," + 
+        protected override string ArgumentDescriptionLocalized =>
+            "The project file to operate on. If a file is not specified," +
             " the command will search the current directory for one.";
         internal override List<Func<DotNetSubCommandBase>> SubCommands =>
             new List<Func<DotNetSubCommandBase>>

@@ -36,7 +36,7 @@ namespace FRC.CLI.Common.Implementations
             string projectDirectory = await m_projectInformationProvider.GetProjectRootDirectoryAsync().ConfigureAwait(false);
             string settingsFile = Path.Combine(projectDirectory, SettingsJsonFileName);
             string json = null;
-            try 
+            try
             {
                 json = await m_fileReaderProvider.ReadFileAsStringAsync(settingsFile).ConfigureAwait(false);
             }
@@ -70,13 +70,13 @@ namespace FRC.CLI.Common.Implementations
                     await m_outputWriter.WriteLineAsync("Could not parse settings file").ConfigureAwait(false);
                 }
                 return null;
-            }            
+            }
         }
 
         public async Task WriteFrcSettingsAsync(FrcSettings settings)
         {
             await m_outputWriter.WriteLineAsync("Writing settings file").ConfigureAwait(false);
-            string serialized = await Task.Run(() => JsonConvert.SerializeObject(settings, 
+            string serialized = await Task.Run(() => JsonConvert.SerializeObject(settings,
                 Formatting.Indented)).ConfigureAwait(false);
             if (string.IsNullOrEmpty(serialized))
             {

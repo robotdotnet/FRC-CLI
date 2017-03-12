@@ -89,7 +89,7 @@ namespace FRC.CLI.Common.Implementations
             }
 
             await m_remotePackageInstallerProvider.InstallZippedPackagesAsync(location).ConfigureAwait(false);
-            
+
             await VerifyRuntimeAsync().ConfigureAwait(false);
 
             var command = await m_fileDeployerProvider.RunCommandAsync("setcap cap_sys_nice=pe /usr/bin/mono-sgen",

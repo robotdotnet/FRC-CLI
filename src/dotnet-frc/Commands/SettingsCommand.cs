@@ -43,8 +43,8 @@ namespace dotnet_frc.Commands
             );
 
             SetupBaseOptions(command);
-            
-            command._teamOption.Description = 
+
+            command._teamOption.Description =
                 "Select team number to be set";
 
             return command;
@@ -59,7 +59,7 @@ namespace dotnet_frc.Commands
 
             using (var scope = container.BeginLifetimeScope())
             {
-                if (!_teamOption.HasValue() && !_ignoreCommand.HasValue() 
+                if (!_teamOption.HasValue() && !_ignoreCommand.HasValue()
                                            && !_argumentCommand.HasValue()
                                            && !_updateArgument.HasValue())
                 {
@@ -70,7 +70,7 @@ namespace dotnet_frc.Commands
 
                 if (_updateArgument.HasValue())
                 {
-                    
+
                 }
 
                 var settingsProvider = scope.Resolve<IFrcSettingsProvider>();

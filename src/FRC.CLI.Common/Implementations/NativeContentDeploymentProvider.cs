@@ -32,13 +32,13 @@ namespace FRC.CLI.Common.Implementations
             m_fileDeployerProvider = fileDeployerProvider;
             m_outputWriter = outputWriter;
         }
-        
+
         public IEnumerable<(string file, string hash)> GetFilesToUpdate(Stream inputFileStream, IEnumerable<(string file, string hash)> localFiles)
         {
             return GetFilesToUpdate(ReadFilesFromStream(inputFileStream), localFiles);
         }
 
-        public IEnumerable<(string file, string hash)> GetFilesToUpdate(IEnumerable<(string file, string hash)> remoteFiles, 
+        public IEnumerable<(string file, string hash)> GetFilesToUpdate(IEnumerable<(string file, string hash)> remoteFiles,
             IEnumerable<(string file, string hash)> localFiles)
         {
             return localFiles.Where(x => !remoteFiles.Any(z => x.file == z.file && x.hash == z.hash));
@@ -101,7 +101,7 @@ namespace FRC.CLI.Common.Implementations
             }
 
             await DeployNativeLibrariesAsync(updateList).ConfigureAwait(false);
-            await m_outputWriter.WriteLineAsync("Successfully deployed native files").ConfigureAwait(false);            
+            await m_outputWriter.WriteLineAsync("Successfully deployed native files").ConfigureAwait(false);
         }
 
         public virtual IEnumerable<string> GetNativeFileList(string fileLocation)
@@ -114,7 +114,7 @@ namespace FRC.CLI.Common.Implementations
             return Directory.GetFiles(fileLocation);
         }
 
-        public virtual async Task<List<(string file, string hash)>> GetMd5ForFilesAsync(string fileLocation, 
+        public virtual async Task<List<(string file, string hash)>> GetMd5ForFilesAsync(string fileLocation,
             IEnumerable<string> ignoreFiles)
         {
             var files = GetNativeFileList(fileLocation);
@@ -122,7 +122,7 @@ namespace FRC.CLI.Common.Implementations
             var filtered = files.Where(x => !ignoreFiles.Contains(Path.GetFileName(x)));
 
             List<(string file, string hash)> retFiles = new List<(string, string)>();
-            
+
             foreach (var file in filtered)
             {
                 string hash = await MD5Helper.Md5SumAsync(file).ConfigureAwait(false);
@@ -139,7 +139,7 @@ namespace FRC.CLI.Common.Implementations
 
         public async Task DeployNativeFilesAsync(IEnumerable<string> files)
         {
-            bool nativeDeploy = await m_fileDeployerProvider.DeployFilesAsync(files.Select(x => (x, m_wpilibNativeDeploySettingsProvider.NativeDeployLocation)), 
+            bool nativeDeploy = await m_fileDeployerProvider.DeployFilesAsync(files.Select(x => (x, m_wpilibNativeDeploySettingsProvider.NativeDeployLocation)),
                 ConnectionUser.Admin).ConfigureAwait(false);
             await m_fileDeployerProvider.RunCommandAsync("ldconfig", ConnectionUser.Admin).ConfigureAwait(false);
 
@@ -161,8 +161,8 @@ namespace FRC.CLI.Common.Implementations
 
             await DeployNativeFilesAsync(files.Select(x => x.file)).ConfigureAwait(false);;
 
-            var md5Deploy = await m_fileDeployerProvider.DeployStreamAsync(memStream, 
-                $"{m_wpilibNativeDeploySettingsProvider.NativeDeployLocation}/{m_wpilibNativeDeploySettingsProvider.NativePropertiesFileName}", 
+            var md5Deploy = await m_fileDeployerProvider.DeployStreamAsync(memStream,
+                $"{m_wpilibNativeDeploySettingsProvider.NativeDeployLocation}/{m_wpilibNativeDeploySettingsProvider.NativePropertiesFileName}",
                 ConnectionUser.Admin).ConfigureAwait(false);
 
             if (!md5Deploy)

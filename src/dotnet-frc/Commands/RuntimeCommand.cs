@@ -85,6 +85,5 @@ namespace dotnet_frc
             return 0;
         }
 
-        
     }
 }

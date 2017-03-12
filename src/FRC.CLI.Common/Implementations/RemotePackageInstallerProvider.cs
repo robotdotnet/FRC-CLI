@@ -17,7 +17,7 @@ namespace FRC.CLI.Common.Implementations
         private IBuildSettingsProvider m_buildSettingsProvider;
         private IExceptionThrowerProvider m_exceptionThrowerProvider;
 
-        public RemotePackageInstallerProvider(IOutputWriter outputWriter, 
+        public RemotePackageInstallerProvider(IOutputWriter outputWriter,
             IFileDeployerProvider fileDeployerProvider,
             ITeamNumberProvider teamNumberProvider,
             IBuildSettingsProvider buildSettingsProvider,
@@ -39,14 +39,14 @@ namespace FRC.CLI.Common.Implementations
 
 
             await m_outputWriter.WriteLineAsync($"Deploying file: {localFile} to {RoboRioOpgkLocation}").ConfigureAwait(false);
-            
+
             bool verbose = m_buildSettingsProvider.Verbose;
 
             if (verbose)
             {
                 await m_outputWriter.WriteLineAsync("Creating Opkg Directory").ConfigureAwait(false);
             }
-            
+
             var ret = await m_fileDeployerProvider.DeployFilesAsync(new (string, string)[] {(localFile, RoboRioOpgkLocation)},
                             ConnectionUser.Admin).ConfigureAwait(false);
 

@@ -23,7 +23,7 @@ namespace FRC.CLI.Common.Connections
         private ITeamNumberProvider m_teamNumberProvider;
         private IPAddress m_remoteIp;
         private TimeSpan m_sshTimeout;
-        
+
         private ConnectionInfo m_adminConnectionInfo;
         private ConnectionInfo m_lvUserConnectionInfo;
 
@@ -161,7 +161,7 @@ namespace FRC.CLI.Common.Connections
                                 m_remoteIp = ipEp.Address;
                                 return;
                             }
-                            else 
+                            else
                             {
                                 throw m_exceptionThrowerProvider.ThrowException("Failed to complete all RoboRio connections");
                             }
@@ -358,7 +358,7 @@ namespace FRC.CLI.Common.Connections
             }
             try
             {
-                var ret = await Task.Run(() => 
+                var ret = await Task.Run(() =>
                 {
                     try
                     {
