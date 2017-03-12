@@ -16,7 +16,7 @@ namespace FRC.CLI.Common.Test
 {
     public class RobotCodeDeploymentProviderTest
     {
-        List<string> FileListToDeploy = new List<string>()
+        private List<string> FileListToDeploy = new List<string>()
         {
             @"C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libcscore.so",
             @"C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libHALAthena.so",

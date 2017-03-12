@@ -31,9 +31,9 @@ namespace dotnet_frc
         }
     }
 
-    class Program
+    internal class Program
     {
-        static int Main(string[] args)
+        private static int Main(string[] args)
         {
             DebugHelper.HandleDebugSwitch(ref args);
             return FrcCommand.Run(args);

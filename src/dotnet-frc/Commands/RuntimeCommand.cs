@@ -7,7 +7,7 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace dotnet_frc
 {
-    class RuntimeCommand : FrcSubCommandBase
+    internal class RuntimeCommand : FrcSubCommandBase
     {
 
         private CommandOption _downloadOption;

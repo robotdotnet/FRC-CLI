@@ -9,11 +9,11 @@ using Microsoft.DotNet.Cli.CommandLine;
 
 namespace dotnet_frc.Commands
 {
-    class SettingsCommand : FrcSubCommandBase
+    internal class SettingsCommand : FrcSubCommandBase
     {
-        CommandOption _ignoreCommand;
-        CommandOption _argumentCommand;
-        CommandOption _updateArgument;
+        private CommandOption _ignoreCommand;
+        private CommandOption _argumentCommand;
+        private CommandOption _updateArgument;
 
         public static DotNetSubCommandBase Create()
         {

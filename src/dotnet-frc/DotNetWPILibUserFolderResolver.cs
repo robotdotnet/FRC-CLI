@@ -6,7 +6,7 @@ namespace dotnet_frc
 {
     public class DotNetWPILibUserFolderResolver : IWPILibUserFolderResolver
     {
-        IProjectInformationProvider m_projectInformationProvider;
+        private IProjectInformationProvider m_projectInformationProvider;
 
         public DotNetWPILibUserFolderResolver(IProjectInformationProvider projectInformationProvider)
         {

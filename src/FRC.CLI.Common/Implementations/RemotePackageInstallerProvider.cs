@@ -11,12 +11,11 @@ namespace FRC.CLI.Common.Implementations
         public const string RoboRioOpgkLocation = "/home/admin/opkg";
 
         public static readonly string OpkgInstallCommand = $"opkg install {RoboRioOpgkLocation}/*.ipk";
-
-        IOutputWriter m_outputWriter;
-        IFileDeployerProvider m_fileDeployerProvider;
-        ITeamNumberProvider m_teamNumberProvider;
-        IBuildSettingsProvider m_buildSettingsProvider;
-        IExceptionThrowerProvider m_exceptionThrowerProvider;
+        private IOutputWriter m_outputWriter;
+        private IFileDeployerProvider m_fileDeployerProvider;
+        private ITeamNumberProvider m_teamNumberProvider;
+        private IBuildSettingsProvider m_buildSettingsProvider;
+        private IExceptionThrowerProvider m_exceptionThrowerProvider;
 
         public RemotePackageInstallerProvider(IOutputWriter outputWriter, 
             IFileDeployerProvider fileDeployerProvider,

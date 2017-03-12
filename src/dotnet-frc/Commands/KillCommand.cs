@@ -7,7 +7,7 @@ using FRC.CLI.Base.Interfaces;
 
 namespace dotnet_frc
 {
-    class KillCommand : FrcSubCommandBase
+    internal class KillCommand : FrcSubCommandBase
     {
         public static DotNetSubCommandBase Create()
         {

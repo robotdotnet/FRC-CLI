@@ -11,11 +11,11 @@ namespace FRC.CLI.Common.Implementations
 {
     public class NativeContentDeploymentProvider : INativeContentDeploymentProvider
     {
-        IWPILibNativeDeploySettingsProvider m_wpilibNativeDeploySettingsProvider;
-        IProjectInformationProvider m_projectInformationProvider;
-        IExceptionThrowerProvider m_exceptionThrowerProvider;
-        IFileDeployerProvider m_fileDeployerProvider;
-        IOutputWriter m_outputWriter;
+        private IWPILibNativeDeploySettingsProvider m_wpilibNativeDeploySettingsProvider;
+        private IProjectInformationProvider m_projectInformationProvider;
+        private IExceptionThrowerProvider m_exceptionThrowerProvider;
+        private IFileDeployerProvider m_fileDeployerProvider;
+        private IOutputWriter m_outputWriter;
 
         public const string NativeDirectoryFolder = "wpinative";
 
