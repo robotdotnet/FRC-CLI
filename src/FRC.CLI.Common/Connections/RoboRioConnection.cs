@@ -305,7 +305,7 @@ namespace FRC.CLI.Common.Connections
                 {
                     await m_outputWriter.WriteLineAsync($"Creating directory {dir}").ConfigureAwait(false);
                 }
-                await Task.Run(() => m_sshUserClient.RunCommand($"mkdir -p {dir}").Dispose()).ConfigureAwait(false);
+                await Task.Run(() => ssh.RunCommand($"mkdir -p {dir}").Dispose()).ConfigureAwait(false);
             }
 
             foreach (var file in fileList)

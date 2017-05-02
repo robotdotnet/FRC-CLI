@@ -41,11 +41,6 @@ namespace FRC.CLI.Common.Implementations
 
             bool verbose = m_buildSettingsProvider.Verbose;
 
-            if (verbose)
-            {
-                await m_outputWriter.WriteLineAsync("Creating Opkg Directory").ConfigureAwait(false);
-            }
-
             var ret = await m_fileDeployerProvider.DeployFilesAsync(new (string, string)[] {(localFile, RoboRioOpgkLocation)},
                             ConnectionUser.Admin).ConfigureAwait(false);
 
