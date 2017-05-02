@@ -4,6 +4,28 @@ using FRC.CLI.Base.Interfaces;
 
 namespace dotnet_frc
 {
+    public class MockProjectInformationProvider : IProjectInformationProvider
+    {
+        public MockProjectInformationProvider()
+        {
+        }
+
+        public Task<string> GetProjectBuildDirectoryAsync()
+        {
+            return Task.FromResult("");
+        }
+
+        public Task<string> GetProjectRootDirectoryAsync()
+        {
+            return Task.FromResult("");
+        }
+
+        public Task<string> GetProjectExecutableNameAsync()
+        {
+            return Task.FromResult("");
+        }
+    }
+
     public class DotNetProjectInformationProvider : IProjectInformationProvider
     {
         public MsBuildProject BuildProject { get; }

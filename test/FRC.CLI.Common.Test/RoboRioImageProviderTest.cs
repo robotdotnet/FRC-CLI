@@ -1,3 +1,4 @@
+/*
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +11,8 @@ using Xunit;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using FRC.CLI.Base.Enums;
+using Renci.SshNet;
 
 namespace FRC.CLI.Common.Test
 {
@@ -48,8 +51,8 @@ namespace FRC.CLI.Common.Test
 
                 mock.Mock<IFileDeployerProvider>().Setup(x => x.GetConnectionIpAsync()).ReturnsAsync(IPAddress.Loopback);
 
-                mock.Mock<IPostRequestProvider>().Setup(x => x.GetPostRequestAsync(It.IsAny<string>(), 
-                    It.IsAny<FormUrlEncodedContent>())).ReturnsAsync(ImageRequestXml.GoodRequest);                
+                mock.Mock<IFileDeployerProvider>().Setup(x => x.RunCommandAsync(It.IsAny<string>(), It.IsAny<ConnectionUser>()))
+                    .ReturnsAsync<SshCommand>(new SshCommand() );
 
                 var sut = mock.Create<RoboRioImageProvider>();
 
@@ -68,9 +71,6 @@ namespace FRC.CLI.Common.Test
                 mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
 
                 mock.Mock<IFileDeployerProvider>().Setup(x => x.GetConnectionIpAsync()).ReturnsAsync(IPAddress.Loopback);
-
-                mock.Mock<IPostRequestProvider>().Setup(x => x.GetPostRequestAsync(It.IsAny<string>(), 
-                    It.IsAny<FormUrlEncodedContent>())).ReturnsAsync(ImageRequestXml.GoodRequest);
 
                 var testData = new List<string>
                 {
@@ -93,9 +93,6 @@ namespace FRC.CLI.Common.Test
                 mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
 
                 mock.Mock<IFileDeployerProvider>().Setup(x => x.GetConnectionIpAsync()).ReturnsAsync(IPAddress.Loopback);
-
-                mock.Mock<IPostRequestProvider>().Setup(x => x.GetPostRequestAsync(It.IsAny<string>(), 
-                    It.IsAny<FormUrlEncodedContent>())).ReturnsAsync(ImageRequestXml.GoodRequest);
 
                 var testData = new List<string>
                 {
@@ -128,3 +125,4 @@ namespace FRC.CLI.Common.Test
         }
     }
 }
+*/

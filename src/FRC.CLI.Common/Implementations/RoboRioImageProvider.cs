@@ -6,6 +6,7 @@ using System.Text;
 using System.Xml;
 using System.Linq;
 using System.Net;
+using FRC.CLI.Base.Enums;
 
 namespace FRC.CLI.Common.Implementations
 {
@@ -14,16 +15,13 @@ namespace FRC.CLI.Common.Implementations
         private IWPILibImageSettingsProvider m_wpilibImageSettingsProvider;
         private IExceptionThrowerProvider m_exceptionThrowerProvider;
         private IFileDeployerProvider m_fileDeployerProvider;
-        private IPostRequestProvider m_postRequestProvider;
         public RoboRioImageProvider(IWPILibImageSettingsProvider wpilibImageSettingsProvider,
             IExceptionThrowerProvider exceptionThrowerProvider,
-            IFileDeployerProvider fileDeployerProvider,
-            IPostRequestProvider postRequestProvider)
+            IFileDeployerProvider fileDeployerProvider)
         {
             m_wpilibImageSettingsProvider = wpilibImageSettingsProvider;
             m_exceptionThrowerProvider = exceptionThrowerProvider;
             m_fileDeployerProvider = fileDeployerProvider;
-            m_postRequestProvider = postRequestProvider;
         }
 
         public async Task CheckCorrectImageAsync()
@@ -50,29 +48,13 @@ namespace FRC.CLI.Common.Implementations
 
         public async Task<string> GetCurrentRoboRioImageAsync()
         {
-            var content = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string, string>("Function", "GetPropertiesOfItem"),
-                new KeyValuePair<string, string>("Plugins", "nisyscfg"),
-                new KeyValuePair<string, string>("Items", "system")
-            });
-            IPAddress connectionIp = await m_fileDeployerProvider.GetConnectionIpAsync().ConfigureAwait(false);
-            var sstring = await m_postRequestProvider.GetPostRequestAsync($"http://{connectionIp}/nisysapi/server",
-                content).ConfigureAwait(false);
-
-            var doc = new XmlDocument();
-            doc.LoadXml(sstring);
-
-            var vals = doc.GetElementsByTagName("Property");
-
-            string str = null;
-
-            foreach (XmlElement val in vals.Cast<XmlElement>().Where(val => val.InnerText.Contains("FRC_roboRIO")))
-            {
-                str = val.InnerText;
-            }
-
-            return str;
+            var result = await m_fileDeployerProvider.RunCommandAsync("grep IMAGEVERSION /etc/natinst/share/scs_imagemetadata.ini", ConnectionUser.LvUser).ConfigureAwait(false);
+            var image = result.Result;
+            var start = image.IndexOf("FRC_roboRIO");
+            if (start < 0) return "";
+            image = image.Substring(start);
+            image = image.Substring(0, image.IndexOf('\"'));
+            return image;
         }
     }
 }
