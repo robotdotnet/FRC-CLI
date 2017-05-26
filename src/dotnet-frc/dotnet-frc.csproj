@@ -17,13 +17,18 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp1.0</TargetFramework>
-
     <PackageId>FRC.DotNet.CLI</PackageId>
+    <AssemblyTitle>FRC DotNet CLI</AssemblyTitle>
+    <Title>FRC DotNet CLI</Title>
     <Authors>RobotDotNet</Authors>
-    <Description>FRC CLI Tool</Description>
+    <Description>FRC CLI Deployment Tool</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReleaseNotes>First release</PackageReleaseNotes>
     <Copyright>Copyright 2017 (c) RobotDotNet. All rights reserved.</Copyright>
-    <PackageTags>FRC</PackageTags>
+    <PackageTags>WPILib;FRC;FIRST;RoboRio</PackageTags>
+    <PackageProjectUrl>https://github.com/robotdotnet/FRC-CLI</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/robotdotnet/FRC-CLI/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>git://github.com/robotdotnet/FRC-CLI</RepositoryUrl>
   </PropertyGroup>
 </Project>
