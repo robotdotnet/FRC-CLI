@@ -12,7 +12,7 @@
     <PackageReference Include="Microsoft.DotNet.CLI.Utils">
       <Version>2.0.0-alpha-004847</Version>
     </PackageReference>
-    <Content Include="$(OutputPath)/*.dll" Pack="true" PackagePath="lib\netcoreapp1.0\" />
+    <Content Include="$(OutputPath)/*.dll" Pack="true" PackagePath="lib\netcoreapp1.1\" />
   </ItemGroup>
   <PropertyGroup>
     <OutputType>Exe</OutputType>
