@@ -13,7 +13,6 @@ namespace dotnet_frc.Commands
     {
         private CommandOption _ignoreCommand;
         private CommandOption _argumentCommand;
-        private CommandOption _updateArgument;
 
         public static DotNetSubCommandBase Create()
         {
@@ -36,12 +35,6 @@ namespace dotnet_frc.Commands
                 CommandOptionType.MultipleValue
             );
 
-            command._updateArgument = command.Option(
-                "-u|--update",
-                "Updates tool to latest version",
-                CommandOptionType.NoValue
-            );
-
             SetupBaseOptions(command);
 
             command._teamOption.Description =
@@ -60,17 +53,11 @@ namespace dotnet_frc.Commands
             using (var scope = container.BeginLifetimeScope())
             {
                 if (!_teamOption.HasValue() && !_ignoreCommand.HasValue()
-                                           && !_argumentCommand.HasValue()
-                                           && !_updateArgument.HasValue())
+                                           && !_argumentCommand.HasValue())
                 {
                     throw scope.Resolve<IExceptionThrowerProvider>().ThrowException(
                         "No argument specified. Must provide an argument to use"
                     );
-                }
-
-                if (_updateArgument.HasValue())
-                {
-
                 }
 
                 var settingsProvider = scope.Resolve<IFrcSettingsProvider>();

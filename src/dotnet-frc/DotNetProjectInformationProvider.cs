@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using FRC.CLI.Base.Interfaces;
@@ -23,6 +25,21 @@ namespace dotnet_frc
         public Task<string> GetProjectExecutableNameAsync()
         {
             return Task.FromResult("");
+        }
+
+        public Task<List<string>> GetFrcDependenciesAsync()
+        {
+            return Task.FromResult(new List<string>());
+        }
+
+        public Task SetFrcDependenciesAsync(IList<(string dep, string version)> dependencies)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task SetFrcTooling((string tool, string version) tool)
+        {
+            return Task.CompletedTask;
         }
     }
 
@@ -53,6 +70,22 @@ namespace dotnet_frc
         public Task<string> GetProjectExecutableNameAsync()
         {
             return Task.FromResult(m_executableName);
+        }
+
+        public Task<List<string>> GetFrcDependenciesAsync()
+        {
+            return Task.FromResult(BuildProject.GetWPILibPackages());
+        }
+
+        public Task SetFrcDependenciesAsync(IList<(string dep, string version)> dependencies)
+        {
+            BuildProject.SetWPILibPackages(dependencies);
+            return Task.CompletedTask;
+        }
+
+        public Task SetFrcTooling((string tool, string version) tool)
+        {
+            throw new NotImplementedException();
         }
     }
 }

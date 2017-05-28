@@ -6,9 +6,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceRoot}\\src\\dotnet-frc\\bin\\Debug\\netcoreapp1.0\\dotnet-frc.dll",
+            "program": "${workspaceRoot}\\src\\dotnet-frc\\bin\\Debug\\netcoreapp1.1\\win7-x64\\dotnet-frc.dll",
             "args": [
-                "C:\\Users\\thadh\\Documents\\VSTests\\src\\Robot451",
+                "C:\\Users\\thadh\\Documents\\RobotTest",
                 "deploy",
                 "-v"
             ],

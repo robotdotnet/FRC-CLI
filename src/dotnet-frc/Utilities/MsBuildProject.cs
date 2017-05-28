@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Construction;
@@ -27,6 +28,9 @@ namespace dotnet_frc
             _projects = projects;
             ProjectRoot = project;
             ProjectFile = project.FullPath;
+
+
+
             ProjectDirectory = PathUtility.EnsureTrailingSlash(project.DirectoryPath);
         }
 
@@ -43,6 +47,49 @@ namespace dotnet_frc
                 }
             }
             return false;
+        }
+
+        public List<string> GetWPILibPackages()
+        {
+            List<string> packages = new List<string>();
+            foreach(var item in ProjectRoot.Items)
+            {
+                if (item.ItemType == "PackageReference")
+                {
+                    if (item.Include.Contains("FRC."))
+                    {
+                        packages.Add(item.Include);
+                    }
+                }
+            }
+            return packages;
+        }
+
+        public void SetWPILibPackages(IList<(string dep, string version)> dependencies)
+        {
+            foreach(var toSet in dependencies)
+            {
+                foreach(var item in ProjectRoot.Items)
+                {
+                    if (item.ItemType == "PackageReference")
+                    {
+                        if (item.Include == toSet.dep)
+                        {
+                            foreach(var child in item.Children)
+                            {
+                                if (child is ProjectMetadataElement childData)
+                                {
+                                    if (childData.Name == "Version")
+                                    {
+                                        childData.Value = toSet.version;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            ProjectRoot.Save();
         }
 
         public string GetProjectAssemblyName()
