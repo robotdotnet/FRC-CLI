@@ -85,7 +85,8 @@ namespace dotnet_frc
 
         public Task SetFrcTooling((string tool, string version) tool)
         {
-            throw new NotImplementedException();
+            BuildProject.SetDotNetToolingVersion(tool);
+            return Task.CompletedTask;
         }
     }
 }

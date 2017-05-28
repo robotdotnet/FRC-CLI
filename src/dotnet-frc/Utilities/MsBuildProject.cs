@@ -92,6 +92,30 @@ namespace dotnet_frc
             ProjectRoot.Save();
         }
 
+        public void SetDotNetToolingVersion((string tool, string version) tooling)
+        {
+            foreach (var item in ProjectRoot.Items)
+            {
+                if (item.ItemType == "DotNetCliToolReference")
+                {
+                    if (item.Include == tooling.tool)
+                    {
+                        foreach(var child in item.Children)
+                        {
+                            if (child is ProjectMetadataElement childData)
+                            {
+                                if (childData.Name == "Version")
+                                {
+                                    childData.Value = tooling.version;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            ProjectRoot.Save();
+        }
+
         public string GetProjectAssemblyName()
         {
             foreach(var item in ProjectRoot.Properties)

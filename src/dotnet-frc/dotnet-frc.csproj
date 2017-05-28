@@ -3,10 +3,11 @@
     <PackageReference Include="autofac">
       <Version>4.3.0</Version>
     </PackageReference>
-    <ProjectReference Include="..\FRC.CLI.Base\FRC.CLI.Base.csproj" >
+    <PackageReference Include="NuGet.Protocol.Core.v3" Version="4.0.0" />
+    <ProjectReference Include="..\FRC.CLI.Base\FRC.CLI.Base.csproj">
       <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
-    <ProjectReference Include="..\FRC.CLI.Common\FRC.CLI.Common.csproj" >
+    <ProjectReference Include="..\FRC.CLI.Common\FRC.CLI.Common.csproj">
       <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
     <PackageReference Include="Microsoft.DotNet.CLI.Utils">

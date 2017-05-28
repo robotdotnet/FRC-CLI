@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Autofac;
 using FRC.CLI.Base.Interfaces;
 using FRC.CLI.Common.Implementations;
+using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 
@@ -21,7 +23,7 @@ namespace dotnet_frc
                 HandleRemainingArguments = false
             };
 
-            SetupBaseOptions(command);
+            SetupBaseOptions(command, false);
 
             command._toolsOption = command.Option(
                 "-t|--tools",
@@ -42,7 +44,13 @@ namespace dotnet_frc
         {
             var builder = new ContainerBuilder();
             AutoFacUtilites.AddCommonServicesToContainer(builder, fileOrDirectory, this,
-                false);
+                false, false);
+            builder.Register(c =>
+            {
+                MsBuildProject msBuild = MsBuildProject.FromFileOrDirectory(ProjectCollection.GlobalProjectCollection, fileOrDirectory);
+                return new DotNetProjectInformationProvider(msBuild);
+            }).As<DotNetProjectInformationProvider>();
+
             var container = builder.Build();
 
             using (var scope = container.BeginLifetimeScope())
@@ -53,6 +61,34 @@ namespace dotnet_frc
                         "No argument specified. Must provide an argument to use"
                     );
                 }
+
+                var project = scope.Resolve<DotNetProjectInformationProvider>();
+
+                if (_dependenciesOption.HasValue())
+                {
+                    List<(string, string)> packageVersions = new List<(string, string)>();
+                    var packages = await project.GetFrcDependenciesAsync();
+                    foreach(var package in packages)
+                    {
+                        var newest = await DotNetNugetVersionDetector.FindNewestPackageVersion(package, true);
+                        if (newest == null) continue;
+                        packageVersions.Add((package, newest));
+                    }
+                    await project.SetFrcDependenciesAsync(packageVersions);
+                }
+
+                if (_toolsOption.HasValue())
+                {
+                    string toolName = "FRC.DotNet.CLI";
+                    var newest = await DotNetNugetVersionDetector.FindNewestPackageVersion(toolName, true);
+                    if (newest != null)
+                    {
+                        await project.SetFrcTooling((toolName, newest));
+                    }
+                }
+
+                var writer = scope.Resolve<IOutputWriter>();
+                await writer.WriteLineAsync("Dependencies have been updated. Please run dotnet restore.");
             }
             return 0;
         }

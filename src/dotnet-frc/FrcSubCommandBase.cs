@@ -10,15 +10,18 @@ namespace dotnet_frc
         internal CommandOption _teamOption;
         internal CommandOption _verboseOption;
 
-        public static void SetupBaseOptions(FrcSubCommandBase command)
+        public static void SetupBaseOptions(FrcSubCommandBase command, bool useTeam = true)
         {
             command.HelpOption("-h|--help");
             
-            command._teamOption = command.Option(
-                "-t|--team",
-                "Force a team",
-                CommandOptionType.SingleValue
-            );
+            if (useTeam)
+            {
+                command._teamOption = command.Option(
+                    "-t|--team",
+                    "Force a team",
+                    CommandOptionType.SingleValue
+                );
+            }
 
             command._verboseOption = command.Option(
                 "-v|--verbose <VERBOSE>",
