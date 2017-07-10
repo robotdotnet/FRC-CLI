@@ -7,7 +7,7 @@
         {
             "taskName": "build",
             "args": [
-                "${workspaceRoot}\\src\\dotnet-frc\\dotnet-frc.csproj",
+                "${workspaceRoot}\\src\\dotnet-gmr\\dotnet-gmr.csproj",
                 "-r", "win7-x64"
             ],
             "isBuildCommand": true,

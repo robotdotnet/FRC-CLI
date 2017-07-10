@@ -8,7 +8,7 @@ Project("{13B669BE-BB05-4DDF-9536-439F39A36129}") = "FRC.CLI.Base", "src\FRC.CLI
 EndProject
 Project("{13B669BE-BB05-4DDF-9536-439F39A36129}") = "FRC.CLI.Common", "src\FRC.CLI.Common\FRC.CLI.Common.csproj", "{E6B6E7EF-EEC9-4754-B1A5-B6817D615398}"
 EndProject
-Project("{13B669BE-BB05-4DDF-9536-439F39A36129}") = "dotnet-frc", "src\dotnet-frc\dotnet-frc.csproj", "{252B7EF5-96AC-4363-89DE-9D63A1A88553}"
+Project("{13B669BE-BB05-4DDF-9536-439F39A36129}") = "dotnet-gmr", "src\dotnet-gmr\dotnet-gmr.csproj", "{252B7EF5-96AC-4363-89DE-9D63A1A88553}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{4B1D73FC-6E9B-4FFB-BEE5-9A95D68062C1}"
 EndProject

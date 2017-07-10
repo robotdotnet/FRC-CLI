@@ -9,8 +9,8 @@ namespace dotnet_frc
 {   
     public class FrcCommand : DotNetTopLevelCommandBase
     {
-        protected override string CommandName => "frc";
-        protected override string FullCommandNameLocalized => ".NET FRC Utility";
+        protected override string CommandName => "gmr";
+        protected override string FullCommandNameLocalized => ".NET GMR Utility";
         protected override string ArgumentName => Constants.ProjectArgumentName;
         protected override string ArgumentDescriptionLocalized =>
             "The project file to operate on. If a file is not specified," +
