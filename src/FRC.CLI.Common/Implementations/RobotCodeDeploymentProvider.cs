@@ -71,6 +71,9 @@ namespace FRC.CLI.Common.Implementations
             List<string> ignoreFiles = (await m_frcSettingsProvider.GetFrcSettingsAsync()
                 .ConfigureAwait(false))
                 ?.DeployIgnoreFiles;
+            if (ignoreFiles == null) {
+                ignoreFiles = new List<string>();
+            }
             var files = Directory.GetFiles(buildDir, "*", SearchOption.AllDirectories).Where(x => !x.Contains(nativeDir))
                                                     .Where(f => !DeployProperties.IgnoreFiles.Any(f.Contains) && !ignoreFiles.Any(f.Contains))
                                                     .Select(x =>
