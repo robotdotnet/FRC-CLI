@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using dotnet_frc.Commands;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 
 
 namespace dotnet_frc
-{   
+{
     public class FrcCommand : DotNetTopLevelCommandBase
     {
         protected override string CommandName => "frc";
@@ -25,10 +26,10 @@ namespace dotnet_frc
                 UpdateCommand.Create
             };
 
-        public static int Run(string[] args)
+        public static Task<int> RunAsync(string[] args)
         {
             var command = new FrcCommand();
-            return command.RunCommand(args);
+            return command.RunCommandAsync(args);
         }
     }
 }

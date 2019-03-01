@@ -12,3 +12,5 @@ Artifacts/
 tools/
 TestResults/
 *.suo
+tmp/
+nupkg/

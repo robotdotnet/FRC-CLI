@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
@@ -20,7 +21,7 @@ namespace Microsoft.DotNet.Cli
         protected abstract string ArgumentDescriptionLocalized { get; }
         internal abstract List<Func<DotNetSubCommandBase>> SubCommands { get; }
 
-        public int RunCommand(string[] args)
+        public async Task<int> RunCommandAsync(string[] args)
         {
             DebugHelper.HandleDebugSwitch(ref args);
 
@@ -39,7 +40,7 @@ namespace Microsoft.DotNet.Cli
                 var subCommand = subCommandCreator();
                 command.AddCommand(subCommand);
 
-                subCommand.OnExecute(() => {
+                subCommand.OnExecuteAsync(async () => {
                     try
                     {
                         if (!command.Arguments.Any())
@@ -53,7 +54,7 @@ namespace Microsoft.DotNet.Cli
                             projectOrDirectory = PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory());
                         }
 
-                        return subCommand.Run(projectOrDirectory);
+                        return await subCommand.RunAsync(projectOrDirectory);
                     }
                     catch (GracefulException e)
                     {
@@ -66,7 +67,7 @@ namespace Microsoft.DotNet.Cli
 
             try
             {
-                return command.Execute(args);
+                return await command.ExecuteAsync(args);
             }
             catch (GracefulException e)
             {

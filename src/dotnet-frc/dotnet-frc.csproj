@@ -1,9 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <PackageReference Include="autofac">
-      <Version>4.3.0</Version>
+      <Version>4.9.1</Version>
     </PackageReference>
-    <PackageReference Include="NuGet.Protocol.Core.v3" Version="4.0.0" />
     <ProjectReference Include="..\FRC.CLI.Base\FRC.CLI.Base.csproj">
       <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
@@ -11,26 +10,27 @@
       <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
     <PackageReference Include="Microsoft.DotNet.CLI.Utils">
-      <Version>2.0.0-alpha-004847</Version>
+      <Version>2.0.0</Version>
     </PackageReference>
     <PackageReference Include="newtonsoft.json">
-      <Version>9.0.1</Version>
+      <Version>12.0.1</Version>
     </PackageReference>
     <PackageReference Include="Nito.AsyncEx.Context">
       <Version>1.1.0</Version>
     </PackageReference>
-    <PackageReference Include="System.ValueTuple">
-      <Version>4.3.0</Version>
-    </PackageReference>
     <PackageReference Include="SSH.NET">
       <Version>2016.0.0</Version>
     </PackageReference>
-    <Content Include="$(OutputPath)/*.dll" Pack="true" PackagePath="lib\netcoreapp1.1\" />
   </ItemGroup>
   <PropertyGroup>
+    <PackAsTool>true</PackAsTool>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+    <ToolCommandName>dotnet-frc</ToolCommandName>
+
+    <LangVersion>7.3</LangVersion>
+
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
-    <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <PackageId>FRC.DotNet.CLI</PackageId>
     <AssemblyTitle>FRC DotNet CLI</AssemblyTitle>
     <Title>FRC DotNet CLI</Title>

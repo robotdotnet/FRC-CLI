@@ -13,7 +13,7 @@ namespace dotnet_frc
         public static void SetupBaseOptions(FrcSubCommandBase command, bool useTeam = true)
         {
             command.HelpOption("-h|--help");
-            
+
             if (useTeam)
             {
                 command._teamOption = command.Option(
@@ -29,13 +29,6 @@ namespace dotnet_frc
                 CommandOptionType.NoValue
             );
 
-        }
-
-        public abstract Task<int> RunAsync(string fileOrDirectory);
-
-        public override int Run(string fileOrDirectory)
-        {
-            return AsyncContext.Run(async () => await RunAsync(fileOrDirectory).ConfigureAwait(false));
         }
     }
 }

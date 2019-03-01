@@ -137,7 +137,7 @@ namespace FRC.CLI.Common.Test
         {
             using (var mock = AutoMock.GetStrict())
             {
-                var json = 
+                var json =
 @"{
     ""Test"", ""RAWR""
 }";
@@ -156,7 +156,7 @@ namespace FRC.CLI.Common.Test
 
                 var sut = mock.Create<NativeContentDeploymentProvider>();
 
-                var filesFromJson = sut.ReadFilesFromStream(memStream).ToList(); 
+                var filesFromJson = sut.ReadFilesFromStream(memStream).ToList();
 
                 Assert.True(filesFromJson.Count == 0);//(testVals, toDeploy);
             }
@@ -165,7 +165,7 @@ namespace FRC.CLI.Common.Test
         [Fact]
         public void TestReadFilesFromWPILibJson()
         {
-            string wpiLibProps = 
+            string wpiLibProps =
 @"C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libcscore.so=171791279411514164571492124812924515682117
 C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libHALAthena.so=23415252104138815423210337237251299842213
 C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libntcore.so=5479587154230127160217123110752018785108
@@ -205,7 +205,7 @@ C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libwpiuti
 
                 var sut = mock.Create<NativeContentDeploymentProvider>();
 
-                var filesFromJson = sut.ReadFilesFromStream(memStream).ToList(); 
+                var filesFromJson = sut.ReadFilesFromStream(memStream).ToList();
 
                 Assert.True(filesFromJson.Count == 0);//(testVals, toDeploy);
             }
@@ -217,7 +217,7 @@ C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libwpiuti
             using (var mock = AutoMock.GetStrict())
             {
                 mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
-                
+
                 IEnumerable<(string, string)> filesToDeploy = null;
                 ConnectionUser conn = (ConnectionUser)5;
 
@@ -230,11 +230,11 @@ C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libwpiuti
                 string command = null;
                 ConnectionUser conn2 = (ConnectionUser)5;
 
-                mock.Mock<IFileDeployerProvider>().Setup(x => x.RunCommandAsync(It.IsAny<string>(), 
+                mock.Mock<IFileDeployerProvider>().Setup(x => x.RunCommandAsync(It.IsAny<string>(),
                     It.IsAny<ConnectionUser>())).Callback<string, ConnectionUser>((p, u) => {
                         command = p;
                         conn2 = u;
-                    }).ReturnsAsync(null);
+                    }).ReturnsAsync((SshCommand)null);
 
                 var m = mock.Mock<IWPILibNativeDeploySettingsProvider>().SetupGet(x => x.NativeDeployLocation).Returns("/usr/local/frc/lib");
 
@@ -250,10 +250,10 @@ C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libwpiuti
 
                 await sut.DeployNativeFilesAsync(depFiles);
 
-                mock.Mock<IFileDeployerProvider>().Verify(x => x.DeployFilesAsync(It.IsAny<IEnumerable<(string, string)>>(), 
+                mock.Mock<IFileDeployerProvider>().Verify(x => x.DeployFilesAsync(It.IsAny<IEnumerable<(string, string)>>(),
                     It.IsAny<ConnectionUser>()), Times.Once);
 
-                mock.Mock<IFileDeployerProvider>().Verify(x => x.RunCommandAsync(It.IsAny<string>(), 
+                mock.Mock<IFileDeployerProvider>().Verify(x => x.RunCommandAsync(It.IsAny<string>(),
                     It.IsAny<ConnectionUser>()), Times.Once);
 
                 Assert.Equal("ldconfig", command);

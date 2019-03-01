@@ -49,6 +49,21 @@ namespace dotnet_frc
             return false;
         }
 
+        public bool GetIsFrameworkProject()
+        {
+            foreach (var item in ProjectRoot.Properties)
+            {
+                if (item.Name == "TargetFramework")
+                {
+                    if (item.Value.StartsWith("net4"))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         public List<string> GetWPILibPackages()
         {
             List<string> packages = new List<string>();

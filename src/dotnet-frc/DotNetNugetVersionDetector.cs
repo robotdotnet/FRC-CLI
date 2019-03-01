@@ -58,11 +58,31 @@ namespace dotnet_frc
 
         public void LogInformationSummary(string data)
         {
-            
+
         }
 
         public void LogErrorSummary(string data)
         {
         }
+
+    public void Log(LogLevel level, string data)
+    {
+      throw new NotImplementedException();
     }
+
+    public Task LogAsync(LogLevel level, string data)
+    {
+      throw new NotImplementedException();
+    }
+
+    public void Log(ILogMessage message)
+    {
+      throw new NotImplementedException();
+    }
+
+    public Task LogAsync(ILogMessage message)
+    {
+      throw new NotImplementedException();
+    }
+  }
 }

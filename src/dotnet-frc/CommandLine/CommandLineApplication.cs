@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Cli.CommandLine
             Arguments = new List<CommandArgument>();
             Commands = new List<CommandLineApplication>();
             RemainingArguments = new List<string>();
-            Invoke = () => 0;
+            Invoke = () => Task<int>.FromResult(0);
         }
 
         public CommandLineApplication Parent { get; set; }
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli.CommandLine
         public List<CommandArgument> Arguments { get; private set; }
         public List<string> RemainingArguments { get; private set; }
         public bool IsShowingInformation { get; protected set; }  // Is showing help or version?
-        public Func<int> Invoke { get; set; }
+        public Func<Task<int>> Invoke { get; set; }
         public Func<string> LongVersionGetter { get; set; }
         public Func<string> ShortVersionGetter { get; set; }
         public List<CommandLineApplication> Commands { get; private set; }
@@ -123,17 +123,12 @@ namespace Microsoft.DotNet.Cli.CommandLine
             return argument;
         }
 
-        public void OnExecute(Func<int> invoke)
+        public void OnExecuteAsync(Func<Task<int>> invoke)
         {
             Invoke = invoke;
         }
 
-        public void OnExecute(Func<Task<int>> invoke)
-        {
-            Invoke = () => invoke().Result;
-        }
-
-        public int Execute(params string[] args)
+        public Task<int> ExecuteAsync(params string[] args)
         {
             CommandLineApplication command = this;
             CommandArgumentEnumerator arguments = null;
@@ -151,24 +146,24 @@ namespace Microsoft.DotNet.Cli.CommandLine
                 if (arg == "-?" || arg == "/?")
                 {
                     command.ShowHelp();
-                    return 0;
+                    return Task.FromResult(0);
                 }
                 else if (isLongOption || arg.StartsWith("-"))
                 {
                     CommandOption option;
 
                     var result = ParseOption(isLongOption, command, args, ref index, out option);
-                  
+
 
                     if (result == ParseOptionResult.ShowHelp)
                     {
                         command.ShowHelp();
-                        return 0;
+                        return Task.FromResult(0);
                     }
                     else if (result == ParseOptionResult.ShowVersion)
                     {
                         command.ShowVersion();
-                        return 0;
+                        return Task.FromResult(0);
                     }
                     else if (result == ParseOptionResult.UnexpectedArgs)
                     {
@@ -215,8 +210,8 @@ namespace Microsoft.DotNet.Cli.CommandLine
 
         private ParseOptionResult ParseOption(
             bool isLongOption,
-            CommandLineApplication command, 
-            string[] args, 
+            CommandLineApplication command,
+            string[] args,
             ref int index,
             out CommandOption option)
         {
@@ -227,7 +222,7 @@ namespace Microsoft.DotNet.Cli.CommandLine
             int optionPrefixLength = isLongOption ? 2 : 1;
             string[] optionComponents = arg.Substring(optionPrefixLength).Split(new[] { ':', '=' }, 2);
             string optionName = optionComponents[0];
-            
+
             if (isLongOption)
             {
                 option = command.Options.SingleOrDefault(
@@ -448,8 +443,8 @@ namespace Microsoft.DotNet.Cli.CommandLine
                     foreach (var arg in cmd.Arguments)
                     {
                         argumentsBuilder.AppendFormat(
-                            outputFormat, 
-                            arg.Name.PadRight(maxArgLen + 2), 
+                            outputFormat,
+                            arg.Name.PadRight(maxArgLen + 2),
                             arg.Description);
                         argumentsBuilder.AppendLine();
                     }
