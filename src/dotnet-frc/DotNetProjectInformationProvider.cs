@@ -46,9 +46,9 @@ namespace dotnet_frc
     public class DotNetProjectInformationProvider : IProjectInformationProvider
     {
         public MsBuildProject BuildProject { get; }
-        private string m_projectRoot;
-        private string m_buildDirectory;
-        private string m_executableName;
+        private readonly string m_projectRoot;
+        private readonly string m_buildDirectory;
+        private readonly string m_executableName;
         public DotNetProjectInformationProvider(MsBuildProject msBuild)
         {
             BuildProject = msBuild;

@@ -61,7 +61,7 @@ namespace dotnet_frc
 
         }
 
-        public void LogErrorSummary(string data)
+        public void LogErrorSummary(string _)
         {
         }
 

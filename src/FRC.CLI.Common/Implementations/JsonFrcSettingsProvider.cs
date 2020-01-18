@@ -9,11 +9,11 @@ namespace FRC.CLI.Common.Implementations
     public class JsonFrcSettingsProvider : IFrcSettingsProvider
     {
         public const string SettingsJsonFileName = "frcsettings.json";
-        private IExceptionThrowerProvider m_exceptionThrowerProvider;
-        private IOutputWriter m_outputWriter;
-        private IProjectInformationProvider m_projectInformationProvider;
-        private IBuildSettingsProvider m_buildSettingsProvider;
-        private IFileReaderProvider m_fileReaderProvider;
+        private readonly IExceptionThrowerProvider m_exceptionThrowerProvider;
+        private readonly IOutputWriter m_outputWriter;
+        private readonly IProjectInformationProvider m_projectInformationProvider;
+        private readonly IBuildSettingsProvider m_buildSettingsProvider;
+        private readonly IFileReaderProvider m_fileReaderProvider;
 
         public JsonFrcSettingsProvider(IExceptionThrowerProvider exceptionThrowerProvider,
             IOutputWriter outputWriter, IProjectInformationProvider projectInformationProvider,

@@ -66,18 +66,17 @@ namespace Microsoft.DotNet.Cli.CommandLine
             bool throwOnUnexpectedArg = true)
         {
             var command = new CommandLineApplication(throwOnUnexpectedArg) { Name = name };
-            return AddCommand(command, configuration, throwOnUnexpectedArg);
+            return AddCommand(command, configuration);
         }
 
-        public CommandLineApplication AddCommand(CommandLineApplication command, bool throwOnUnexpectedArg = true)
+        public CommandLineApplication AddCommand(CommandLineApplication command)
         {
-            return AddCommand(command, _ => { }, throwOnUnexpectedArg);
+            return AddCommand(command, _ => { });
         }
 
         public CommandLineApplication AddCommand(
             CommandLineApplication command,
-            Action<CommandLineApplication> configuration,
-            bool throwOnUnexpectedArg = true)
+            Action<CommandLineApplication> configuration)
         {
             if (command == null || configuration == null)
             {
@@ -151,9 +150,7 @@ namespace Microsoft.DotNet.Cli.CommandLine
                 }
                 else if (isLongOption || arg.StartsWith("-"))
                 {
-                    CommandOption option;
-
-                    var result = ParseOption(isLongOption, command, args, ref index, out option);
+                    var result = ParseOption(isLongOption, command, args, ref index, out _);
 
 
                     if (result == ParseOptionResult.ShowHelp)

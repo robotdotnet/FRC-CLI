@@ -7,10 +7,10 @@ namespace dotnet_frc
 {
     public class DotNetCodeBuilder : ICodeBuilderProvider
     {
-        private IProjectInformationProvider m_projectInformationProvider;
-        private IBuildSettingsProvider m_buildSettingsProvider;
-        private IExceptionThrowerProvider m_exceptionThrowerProvider;
-        private IOutputWriter m_outputWriter;
+        private readonly IProjectInformationProvider m_projectInformationProvider;
+        private readonly IBuildSettingsProvider m_buildSettingsProvider;
+        private readonly IExceptionThrowerProvider m_exceptionThrowerProvider;
+        private readonly IOutputWriter m_outputWriter;
 
         public DotNetCodeBuilder(IProjectInformationProvider projectInformationProvider, IBuildSettingsProvider buildSettingsProvider,
             IExceptionThrowerProvider exceptionThrowerProvider, IOutputWriter outputWriter)

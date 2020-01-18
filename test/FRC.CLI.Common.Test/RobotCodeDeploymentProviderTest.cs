@@ -16,7 +16,7 @@ namespace FRC.CLI.Common.Test
 {
     public class RobotCodeDeploymentProviderTest
     {
-        private List<string> FileListToDeploy = new List<string>()
+        private readonly List<string> FileListToDeploy = new List<string>()
         {
             @"C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libcscore.so",
             @"C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libHALAthena.so",
@@ -36,14 +36,10 @@ namespace FRC.CLI.Common.Test
         [Fact]
         public void TestGetListOfFilesToDeployNoSettings()
         {
-            using (var mock = AutoMock.GetStrict())
-            {
-                mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
+            using var mock = AutoMock.GetStrict();
+            mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
 
-                mock.Create<RobotCodeDeploymentProvider>();
-
-
-            }
+            mock.Create<RobotCodeDeploymentProvider>();
         }
     }
 }

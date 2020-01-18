@@ -11,11 +11,11 @@ namespace FRC.CLI.Common.Implementations
 {
     public class NativeContentDeploymentProvider : INativeContentDeploymentProvider
     {
-        private IWPILibNativeDeploySettingsProvider m_wpilibNativeDeploySettingsProvider;
-        private IProjectInformationProvider m_projectInformationProvider;
-        private IExceptionThrowerProvider m_exceptionThrowerProvider;
-        private IFileDeployerProvider m_fileDeployerProvider;
-        private IOutputWriter m_outputWriter;
+        private readonly IWPILibNativeDeploySettingsProvider m_wpilibNativeDeploySettingsProvider;
+        private readonly IProjectInformationProvider m_projectInformationProvider;
+        private readonly IExceptionThrowerProvider m_exceptionThrowerProvider;
+        private readonly IFileDeployerProvider m_fileDeployerProvider;
+        private readonly IOutputWriter m_outputWriter;
 
         public const string NativeDirectoryFolder = "wpinative";
 
@@ -45,19 +45,17 @@ namespace FRC.CLI.Common.Implementations
 
         public virtual IEnumerable<(string file, string hash)> ReadFilesFromStream(Stream inputFileStream)
         {
-            using (StreamReader reader = new StreamReader(inputFileStream))
-            using (JsonTextReader jsonReader = new JsonTextReader(reader))
+            using StreamReader reader = new StreamReader(inputFileStream);
+            using JsonTextReader jsonReader = new JsonTextReader(reader);
+            JsonSerializer serializer = new JsonSerializer();
+            try
             {
-                JsonSerializer serializer = new JsonSerializer();
-                try
-                {
-                    var retVal = serializer.Deserialize<List<(string, string)>>(jsonReader);
-                    return retVal ?? new List<(string, string)>();
-                }
-                catch (JsonReaderException)
-                {
-                    return new List<(string, string)>();
-                }
+                var retVal = serializer.Deserialize<List<(string, string)>>(jsonReader);
+                return retVal ?? new List<(string, string)>();
+            }
+            catch (JsonReaderException)
+            {
+                return new List<(string, string)>();
             }
         }
 

@@ -5,8 +5,8 @@ namespace FRC.CLI.Common.Implementations
 {
     public class RoboRioDependencyCheckerProvider : IRoboRioDependencyCheckerProvider
     {
-        private IRuntimeProvider m_runtimeProvider;
-        private IOutputWriter m_outputWriter;
+        private readonly IRuntimeProvider m_runtimeProvider;
+        private readonly IOutputWriter m_outputWriter;
 
         public RoboRioDependencyCheckerProvider(IRuntimeProvider runtimeProvider,
             IOutputWriter outputWriter)

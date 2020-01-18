@@ -21,145 +21,135 @@ namespace FRC.CLI.Common.Test
         [Fact]
         public void TestGetFilesToUpdateListMatching()
         {
-            using (var mock = AutoMock.GetStrict())
-            {
-                List<(string, string)> testVals = new List<(string, string)>
+            using var mock = AutoMock.GetStrict();
+            List<(string, string)> testVals = new List<(string, string)>
                 {
                     ("Test", "5555"),
                     ("Another", "342"),
                     ("A Third", "334211")
                 };
 
-                // Force the second to actually be a copy
-                var remoteFiles = testVals.ToList();
-                var localFiles = testVals.ToList();
+            // Force the second to actually be a copy
+            var remoteFiles = testVals.ToList();
+            var localFiles = testVals.ToList();
 
-                mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
+            mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
 
-                var sut = mock.Create<NativeContentDeploymentProvider>();
+            var sut = mock.Create<NativeContentDeploymentProvider>();
 
-                var toDeploy = sut.GetFilesToUpdate(remoteFiles, localFiles).ToList();
+            var toDeploy = sut.GetFilesToUpdate(remoteFiles, localFiles).ToList();
 
-                Assert.True(toDeploy.Count == 0);//(testVals, toDeploy);
-            }
+            Assert.True(toDeploy.Count == 0);//(testVals, toDeploy);
         }
 
         [Fact]
         public void TestGetFilesToUpdateListExtraLocal()
         {
-            using (var mock = AutoMock.GetStrict())
-            {
-                List<(string, string)> testVals = new List<(string, string)>
+            using var mock = AutoMock.GetStrict();
+            List<(string, string)> testVals = new List<(string, string)>
                 {
                     ("Test", "5555"),
                     ("Another", "342")
                 };
 
-                // Force the second to actually be a copy
-                var remoteFiles = testVals.ToList();
-                var localFiles = testVals.ToList();
+            // Force the second to actually be a copy
+            var remoteFiles = testVals.ToList();
+            var localFiles = testVals.ToList();
 
-                var added = ("A Third", "334211");
-                localFiles.Add(added);
+            var added = ("A Third", "334211");
+            localFiles.Add(added);
 
-                mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
+            mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
 
-                var sut = mock.Create<NativeContentDeploymentProvider>();
+            var sut = mock.Create<NativeContentDeploymentProvider>();
 
-                var toDeploy = sut.GetFilesToUpdate(remoteFiles, localFiles).ToList();
+            var toDeploy = sut.GetFilesToUpdate(remoteFiles, localFiles).ToList();
 
-                Assert.Equal(new (string, string)[] {added}, toDeploy);
-            }
+            Assert.Equal(new (string, string)[] { added }, toDeploy);
         }
 
         [Fact]
         public void TestGetFilesToUpdateListExtraRemote()
         {
-            using (var mock = AutoMock.GetStrict())
-            {
-                List<(string, string)> testVals = new List<(string, string)>
+            using var mock = AutoMock.GetStrict();
+            List<(string, string)> testVals = new List<(string, string)>
                 {
                     ("Test", "5555"),
                     ("Another", "342")
                 };
 
-                // Force the second to actually be a copy
-                var remoteFiles = testVals.ToList();
-                var localFiles = testVals.ToList();
+            // Force the second to actually be a copy
+            var remoteFiles = testVals.ToList();
+            var localFiles = testVals.ToList();
 
-                var added = ("A Third", "334211");
-                remoteFiles.Add(added);
+            var added = ("A Third", "334211");
+            remoteFiles.Add(added);
 
-                mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
+            mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
 
-                var sut = mock.Create<NativeContentDeploymentProvider>();
+            var sut = mock.Create<NativeContentDeploymentProvider>();
 
-                var toDeploy = sut.GetFilesToUpdate(remoteFiles, localFiles).ToList();
+            var toDeploy = sut.GetFilesToUpdate(remoteFiles, localFiles).ToList();
 
-                Assert.True(toDeploy.Count == 0);//(testVals, toDeploy);
-            }
+            Assert.True(toDeploy.Count == 0);//(testVals, toDeploy);
         }
 
         [Fact]
         public void TestReadFilesFromStreamValidJson()
         {
-            using (var mock = AutoMock.GetStrict())
-            {
-                List<(string, string)> testVals = new List<(string, string)>
+            using var mock = AutoMock.GetStrict();
+            List<(string, string)> testVals = new List<(string, string)>
                 {
                     ("Test", "5555"),
                     ("Another", "342"),
                     ("A Third", "334211")
                 };
 
-                var json = JsonConvert.SerializeObject(testVals);
-                MemoryStream memStream = new MemoryStream();
-                {
-                    StreamWriter writer = new StreamWriter(memStream);
-                    writer.Write(json);
-                    writer.Flush();
-                }
-
-                memStream.Position = 0;
-
-                mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
-
-                var sut = mock.Create<NativeContentDeploymentProvider>();
-
-                var filesFromJson = sut.ReadFilesFromStream(memStream);
-
-                Assert.Equal(testVals, filesFromJson);
+            var json = JsonConvert.SerializeObject(testVals);
+            MemoryStream memStream = new MemoryStream();
+            {
+                StreamWriter writer = new StreamWriter(memStream);
+                writer.Write(json);
+                writer.Flush();
             }
+
+            memStream.Position = 0;
+
+            mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
+
+            var sut = mock.Create<NativeContentDeploymentProvider>();
+
+            var filesFromJson = sut.ReadFilesFromStream(memStream);
+
+            Assert.Equal(testVals, filesFromJson);
         }
 
         [Fact]
         public void TestReadFilesFromStreamInvalidJson()
         {
-            using (var mock = AutoMock.GetStrict())
-            {
-                var json =
+            using var mock = AutoMock.GetStrict();
+            var json =
 @"{
     ""Test"", ""RAWR""
 }";
 
-                MemoryStream memStream = new MemoryStream();
-                {
-                    StreamWriter writer = new StreamWriter(memStream);
-                    writer.Write(json);
-                    writer.Flush();
-                }
-
-                memStream.Position = 0;
-
-
-                mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
-
-                var sut = mock.Create<NativeContentDeploymentProvider>();
-
-                var filesFromJson = sut.ReadFilesFromStream(memStream).ToList();
-
-                Assert.True(filesFromJson.Count == 0);//(testVals, toDeploy);
+            MemoryStream memStream = new MemoryStream();
+            {
+                StreamWriter writer = new StreamWriter(memStream);
+                writer.Write(json);
+                writer.Flush();
             }
+
+            memStream.Position = 0;
+
+
+            mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
+
+            var sut = mock.Create<NativeContentDeploymentProvider>();
+
+            var filesFromJson = sut.ReadFilesFromStream(memStream).ToList();
+
+            Assert.True(filesFromJson.Count == 0);//(testVals, toDeploy);
         }
 
         [Fact]
@@ -189,59 +179,58 @@ C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libopencv
 C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libwpiutil.so=22182431212061718787981061221239560126102
 ";
 
-            using (var mock = AutoMock.GetStrict())
+            using var mock = AutoMock.GetStrict();
+            MemoryStream memStream = new MemoryStream();
             {
-                MemoryStream memStream = new MemoryStream();
-                {
-                    StreamWriter writer = new StreamWriter(memStream);
-                    writer.Write(wpiLibProps);
-                    writer.Flush();
-                }
-
-                memStream.Position = 0;
-
-
-                mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
-
-                var sut = mock.Create<NativeContentDeploymentProvider>();
-
-                var filesFromJson = sut.ReadFilesFromStream(memStream).ToList();
-
-                Assert.True(filesFromJson.Count == 0);//(testVals, toDeploy);
+                StreamWriter writer = new StreamWriter(memStream);
+                writer.Write(wpiLibProps);
+                writer.Flush();
             }
+
+            memStream.Position = 0;
+
+
+            mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
+
+            var sut = mock.Create<NativeContentDeploymentProvider>();
+
+            var filesFromJson = sut.ReadFilesFromStream(memStream).ToList();
+
+            Assert.True(filesFromJson.Count == 0);//(testVals, toDeploy);
         }
 
         [Fact]
         public async Task TestDeployNativeFiles()
         {
-            using (var mock = AutoMock.GetStrict())
-            {
-                mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
+            using var mock = AutoMock.GetStrict();
+            mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
 
-                IEnumerable<(string, string)>? filesToDeploy = null;
-                ConnectionUser conn = (ConnectionUser)5;
+            IEnumerable<(string, string)>? filesToDeploy = null;
+            ConnectionUser conn = (ConnectionUser)5;
 
-                var fProvider = mock.Mock<IFileDeployerProvider>().Setup(x => x.DeployFilesAsync(It.IsAny<IEnumerable<(string, string)>>(),
-                    It.IsAny<ConnectionUser>())).Callback<IEnumerable<(string, string)>, ConnectionUser>((f, u) => {
-                        filesToDeploy = f;
-                        conn = u;
-                    }).ReturnsAsync(true);
+            var fProvider = mock.Mock<IFileDeployerProvider>().Setup(x => x.DeployFilesAsync(It.IsAny<IEnumerable<(string, string)>>(),
+                It.IsAny<ConnectionUser>())).Callback<IEnumerable<(string, string)>, ConnectionUser>((f, u) =>
+                {
+                    filesToDeploy = f;
+                    conn = u;
+                }).ReturnsAsync(true);
 
-                string? command = null;
-                ConnectionUser conn2 = (ConnectionUser)5;
+            string? command = null;
+            ConnectionUser conn2 = (ConnectionUser)5;
 #pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
-                mock.Mock<IFileDeployerProvider>().Setup(x => x.RunCommandAsync(It.IsAny<string>(),
-                    It.IsAny<ConnectionUser>())).Callback<string, ConnectionUser>((p, u) => {
-                        command = p;
-                        conn2 = u;
-                    }).ReturnsAsync((SshCommand?)null);
+            mock.Mock<IFileDeployerProvider>().Setup(x => x.RunCommandAsync(It.IsAny<string>(),
+                It.IsAny<ConnectionUser>())).Callback<string, ConnectionUser>((p, u) =>
+                {
+                    command = p;
+                    conn2 = u;
+                }).ReturnsAsync((SshCommand?)null);
 #pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 
-                var m = mock.Mock<IWPILibNativeDeploySettingsProvider>().SetupGet(x => x.NativeDeployLocation).Returns("/usr/local/frc/lib");
+            var m = mock.Mock<IWPILibNativeDeploySettingsProvider>().SetupGet(x => x.NativeDeployLocation).Returns("/usr/local/frc/lib");
 
-                var sut = mock.Create<NativeContentDeploymentProvider>();
+            var sut = mock.Create<NativeContentDeploymentProvider>();
 
-                List<string> depFiles = new List<string>
+            List<string> depFiles = new List<string>
                 {
                     "Hello",
                     "World",
@@ -249,20 +238,18 @@ C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libwpiuti
                     "Timers"
                 };
 
-                await sut.DeployNativeFilesAsync(depFiles);
+            await sut.DeployNativeFilesAsync(depFiles);
 
-                mock.Mock<IFileDeployerProvider>().Verify(x => x.DeployFilesAsync(It.IsAny<IEnumerable<(string, string)>>(),
-                    It.IsAny<ConnectionUser>()), Times.Once);
+            mock.Mock<IFileDeployerProvider>().Verify(x => x.DeployFilesAsync(It.IsAny<IEnumerable<(string, string)>>(),
+                It.IsAny<ConnectionUser>()), Times.Once);
 
-                mock.Mock<IFileDeployerProvider>().Verify(x => x.RunCommandAsync(It.IsAny<string>(),
-                    It.IsAny<ConnectionUser>()), Times.Once);
+            mock.Mock<IFileDeployerProvider>().Verify(x => x.RunCommandAsync(It.IsAny<string>(),
+                It.IsAny<ConnectionUser>()), Times.Once);
 
-                Assert.Equal("ldconfig", command);
-                Assert.Equal(depFiles.Select(x => (x, "/usr/local/frc/lib")), filesToDeploy);
-                Assert.Equal(ConnectionUser.Admin, conn);
-                Assert.Equal(ConnectionUser.Admin, conn2);
-                //Assert.Equal("/usr/local/frc/lib", deployLoc);
-            }
+            Assert.Equal("ldconfig", command);
+            Assert.Equal(depFiles.Select(x => (x, "/usr/local/frc/lib")), filesToDeploy);
+            Assert.Equal(ConnectionUser.Admin, conn);
+            Assert.Equal(ConnectionUser.Admin, conn2);
         }
     }
 }

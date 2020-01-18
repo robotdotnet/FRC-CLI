@@ -7,13 +7,13 @@ namespace FRC.CLI.Common.Implementations
 {
     public class MonoRuntimeProvider : IRuntimeProvider
     {
-        private IRemotePackageInstallerProvider m_remotePackageInstallerProvider;
-        private IFileDeployerProvider m_fileDeployerProvider;
-        private IExceptionThrowerProvider m_exceptionThrowerProvider;
-        private IWPILibUserFolderResolver m_wpilibUserFolderResolver;
-        private IFileDownloadProvider m_fileDownloadProvider;
-        private IMd5HashCheckerProvider m_md5HashCheckerProvider;
-        private IOutputWriter m_outputWriter;
+        private readonly IRemotePackageInstallerProvider m_remotePackageInstallerProvider;
+        private readonly IFileDeployerProvider m_fileDeployerProvider;
+        private readonly IExceptionThrowerProvider m_exceptionThrowerProvider;
+        private readonly IWPILibUserFolderResolver m_wpilibUserFolderResolver;
+        private readonly IFileDownloadProvider m_fileDownloadProvider;
+        private readonly IMd5HashCheckerProvider m_md5HashCheckerProvider;
+        private readonly IOutputWriter m_outputWriter;
 
         public string MonoVersion = DeployProperties.MonoVersion;
         public string MonoUrl = DeployProperties.MonoUrl;
@@ -39,11 +39,9 @@ namespace FRC.CLI.Common.Implementations
         public virtual async Task DownloadToFileAsync(string url, string file)
         {
             await m_outputWriter.WriteLineAsync($"Writing file to: {file}").ConfigureAwait(false);
-            using (var writeStream = File.Open(file, FileMode.Create))
-            {
-                await m_fileDownloadProvider.DownloadFileToStreamAsync(
-                    url, writeStream).ConfigureAwait(false);
-            }
+            using var writeStream = File.Open(file, FileMode.Create);
+            await m_fileDownloadProvider.DownloadFileToStreamAsync(
+url, writeStream).ConfigureAwait(false);
         }
 
         public async System.Threading.Tasks.Task DownladRuntimeAsync()

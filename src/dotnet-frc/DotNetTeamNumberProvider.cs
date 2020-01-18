@@ -7,10 +7,10 @@ namespace dotnet_frc
 {
     public class DotNetTeamNumberProvider : ITeamNumberProvider
     {
-        private IOutputWriter m_outputWriter;
-        private IExceptionThrowerProvider m_exceptionThrowerProvider;
-        private Lazy<IFrcSettingsProvider> m_frcSettingsProvider;
-        private int? m_inputTeamNumber;
+        private readonly IOutputWriter m_outputWriter;
+        private readonly IExceptionThrowerProvider m_exceptionThrowerProvider;
+        private readonly Lazy<IFrcSettingsProvider> m_frcSettingsProvider;
+        private readonly int? m_inputTeamNumber;
 
         public DotNetTeamNumberProvider(int? inputTeamNumber, IOutputWriter outputWriter,
             IExceptionThrowerProvider exceptionThrowerProvider, 

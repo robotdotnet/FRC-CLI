@@ -12,9 +12,9 @@ namespace FRC.CLI.Common.Implementations
 {
     public class RoboRioImageProvider : IRoboRioImageProvider
     {
-        private IWPILibImageSettingsProvider m_wpilibImageSettingsProvider;
-        private IExceptionThrowerProvider m_exceptionThrowerProvider;
-        private IFileDeployerProvider m_fileDeployerProvider;
+        private readonly IWPILibImageSettingsProvider m_wpilibImageSettingsProvider;
+        private readonly IExceptionThrowerProvider m_exceptionThrowerProvider;
+        private readonly IFileDeployerProvider m_fileDeployerProvider;
         public RoboRioImageProvider(IWPILibImageSettingsProvider wpilibImageSettingsProvider,
             IExceptionThrowerProvider exceptionThrowerProvider,
             IFileDeployerProvider fileDeployerProvider)

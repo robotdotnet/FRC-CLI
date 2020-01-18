@@ -10,10 +10,10 @@ namespace FRC.CLI.Common.Implementations
     {
         public const string JsonFileName = "ImageSettings.json";
 
-        private IProjectInformationProvider m_projectInformationProvider;
-        private INativeContentDeploymentProvider m_nativeContentDeploymentProvider;
-        private IExceptionThrowerProvider m_exceptionThrowerProvider;
-        private IFileReaderProvider m_fileReaderProvider;
+        private readonly IProjectInformationProvider m_projectInformationProvider;
+        private readonly INativeContentDeploymentProvider m_nativeContentDeploymentProvider;
+        private readonly IExceptionThrowerProvider m_exceptionThrowerProvider;
+        private readonly IFileReaderProvider m_fileReaderProvider;
 
         public WPILibImageSettingsProvider(IProjectInformationProvider projectInformationProvider,
             INativeContentDeploymentProvider nativeContentDeploymentProvider,
@@ -53,8 +53,7 @@ namespace FRC.CLI.Common.Implementations
 
             string settingsFile = GetCombinedFilePath(buildLocation);
 
-            string? json = null;
-
+            string json;
             try
             {
                 json = await m_fileReaderProvider.ReadFileAsStringAsync(settingsFile).ConfigureAwait(false);

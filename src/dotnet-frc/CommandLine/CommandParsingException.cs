@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Cli.CommandLine
 {
     internal class CommandParsingException : Exception
     {
-        private bool _isRequireSubCommandMissing;
+        private readonly bool _isRequireSubCommandMissing;
 
         public CommandParsingException(
             CommandLineApplication command,

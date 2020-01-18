@@ -20,9 +20,9 @@ namespace FRC.CLI.Common.Connections
         public const string RoboRioUSBIp = "172.22.11.2";
         public const string RoboRioIpFormatString = "10.{0}.{1}.2";
 
-        private ITeamNumberProvider m_teamNumberProvider;
+        private readonly ITeamNumberProvider m_teamNumberProvider;
         private IPAddress? m_remoteIp;
-        private TimeSpan m_sshTimeout;
+        private readonly TimeSpan m_sshTimeout;
 
         private ConnectionInfo? m_adminConnectionInfo;
         private ConnectionInfo? m_lvUserConnectionInfo;
@@ -32,9 +32,9 @@ namespace FRC.CLI.Common.Connections
         private ScpClient m_scpUserClient;
         private ScpClient m_scpAdminClient;
 
-        private IOutputWriter m_outputWriter;
-        private IBuildSettingsProvider m_buildSettingsProvider;
-        private IExceptionThrowerProvider m_exceptionThrowerProvider;
+        private readonly IOutputWriter m_outputWriter;
+        private readonly IBuildSettingsProvider m_buildSettingsProvider;
+        private readonly IExceptionThrowerProvider m_exceptionThrowerProvider;
 
         public bool Connected => m_remoteIp != null;
 

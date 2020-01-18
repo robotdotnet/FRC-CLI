@@ -68,11 +68,9 @@ new object[]{
             try 
             {
 
-                using (FileStream fs = new FileStream(tempFile, FileMode.Open))
-                {
-                    var sut = new FileReaderProvider();
-                    var result = await Assert.ThrowsAsync<IOException>(async () => await sut.ReadFileAsStringAsync(tempFile));
-                }
+                using FileStream fs = new FileStream(tempFile, FileMode.Open);
+                var sut = new FileReaderProvider();
+                var result = await Assert.ThrowsAsync<IOException>(async () => await sut.ReadFileAsStringAsync(tempFile));
             }
             finally
             {

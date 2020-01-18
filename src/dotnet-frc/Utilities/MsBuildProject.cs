@@ -21,7 +21,7 @@ namespace dotnet_frc
 
         public ProjectRootElement ProjectRoot { get; }
 
-        private ProjectCollection _projects;
+        private readonly ProjectCollection _projects;
 
         private MsBuildProject(ProjectCollection projects, ProjectRootElement project)
         {
@@ -82,13 +82,13 @@ namespace dotnet_frc
 
         public void SetWPILibPackages(IList<(string dep, string version)> dependencies)
         {
-            foreach(var toSet in dependencies)
+            foreach(var (dep, version) in dependencies)
             {
                 foreach(var item in ProjectRoot.Items)
                 {
                     if (item.ItemType == "PackageReference")
                     {
-                        if (item.Include == toSet.dep)
+                        if (item.Include == dep)
                         {
                             foreach(var child in item.Children)
                             {
@@ -96,7 +96,7 @@ namespace dotnet_frc
                                 {
                                     if (childData.Name == "Version")
                                     {
-                                        childData.Value = toSet.version;
+                                        childData.Value = version;
                                     }
                                 }
                             }

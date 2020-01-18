@@ -38,11 +38,11 @@ namespace Microsoft.DotNet.Cli.CommandLine
                 }
                 else if (part.StartsWith("<") && part.EndsWith(">"))
                 {
-                    ValueName = part.Substring(1, part.Length - 2);
+                    ValueName = part[1..^1];
                 }
                 else if (optionType == CommandOptionType.MultipleValue && part.StartsWith("<") && part.EndsWith(">..."))
                 {
-                    ValueName = part.Substring(1, part.Length - 5);
+                    ValueName = part[1..^4];
                 }
                 else
                 { 
@@ -94,8 +94,7 @@ namespace Microsoft.DotNet.Cli.CommandLine
                     }
                     else
                     {
-                        bool boolValue;
-                        if (!bool.TryParse(value, out boolValue))
+                        if (!bool.TryParse(value, out var boolValue))
                         {
                             return false;
                         }

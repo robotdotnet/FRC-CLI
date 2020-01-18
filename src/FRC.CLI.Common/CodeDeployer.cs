@@ -5,13 +5,13 @@ namespace FRC.CLI.Common
 {
     public class CodeDeployer
     {
-        private ICodeBuilderProvider m_codeBuilderProvider;
-        private IExceptionThrowerProvider m_exceptionThrowerProvider;
-        private IRoboRioImageProvider m_roboRioImageProvider;
-        private IOutputWriter m_outputWriter;
-        private IRoboRioDependencyCheckerProvider m_roboRioDependencyCheckerProvider;
-        private IRobotCodeDeploymentProvider m_robotCodeDeploymentProvider;
-        private INativeContentDeploymentProvider m_nativePackageDeploymentProvider;
+        private readonly ICodeBuilderProvider m_codeBuilderProvider;
+        private readonly IExceptionThrowerProvider m_exceptionThrowerProvider;
+        private readonly IRoboRioImageProvider m_roboRioImageProvider;
+        private readonly IOutputWriter m_outputWriter;
+        private readonly IRoboRioDependencyCheckerProvider m_roboRioDependencyCheckerProvider;
+        private readonly IRobotCodeDeploymentProvider m_robotCodeDeploymentProvider;
+        private readonly INativeContentDeploymentProvider m_nativePackageDeploymentProvider;
 
         public CodeDeployer(ICodeBuilderProvider codeBuilderProvider, IExceptionThrowerProvider exceptionThrowerProvider,
             IRoboRioImageProvider roboRioImageProvider, IOutputWriter outputWriter,

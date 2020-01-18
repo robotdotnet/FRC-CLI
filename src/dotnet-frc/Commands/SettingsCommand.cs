@@ -76,8 +76,7 @@ namespace dotnet_frc.Commands
 
                 if (_teamOption.HasValue())
                 {
-                    int teamNumber = 0;
-                    if (int.TryParse(_teamOption.Value(), out teamNumber))
+                    if (int.TryParse(_teamOption.Value(), out var teamNumber))
                     {
                         if (teamNumber > 0)
                         {
