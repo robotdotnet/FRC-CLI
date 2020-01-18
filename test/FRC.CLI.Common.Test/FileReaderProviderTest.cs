@@ -32,7 +32,7 @@ new object[]{
         };
 
         [Theory]
-        [MemberData("TestData")]
+        [MemberData(nameof(TestData))]
         public async Task TestFileReadExists(string testText)
         {
             string tempFile = Path.GetTempFileName();

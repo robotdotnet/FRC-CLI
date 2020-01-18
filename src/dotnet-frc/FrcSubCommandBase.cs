@@ -1,7 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
-using Nito.AsyncEx;
 
 namespace dotnet_frc
 {
@@ -9,6 +8,13 @@ namespace dotnet_frc
     {
         internal CommandOption _teamOption;
         internal CommandOption _verboseOption;
+
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
+        protected FrcSubCommandBase()
+#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
+        {
+
+        }
 
         public static void SetupBaseOptions(FrcSubCommandBase command, bool useTeam = true)
         {

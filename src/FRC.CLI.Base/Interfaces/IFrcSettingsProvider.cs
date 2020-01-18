@@ -5,7 +5,7 @@ namespace FRC.CLI.Base.Interfaces
 {
     public interface IFrcSettingsProvider
     {
-        Task<FrcSettings> GetFrcSettingsAsync();
+        Task<FrcSettings?> GetFrcSettingsAsync();
         Task WriteFrcSettingsAsync(FrcSettings settings);
     }
 }

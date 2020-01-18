@@ -53,7 +53,7 @@ namespace FRC.CLI.Common.Implementations
 
             string settingsFile = GetCombinedFilePath(buildLocation);
 
-            string json = null;
+            string? json = null;
 
             try
             {

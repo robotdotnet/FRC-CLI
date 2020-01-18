@@ -143,7 +143,7 @@ namespace dotnet_frc
             return Path.GetFileNameWithoutExtension(ProjectFile) + ".exe";
         }
 
-        public MsBuildProject GetPropsFile()
+        public MsBuildProject? GetPropsFile()
         {
             var projectFileName = Directory.GetFiles(Path.Combine(ProjectDirectory, "obj")).Where(x => x.EndsWith("csproj.nuget.g.props")).FirstOrDefault();
 
@@ -230,7 +230,7 @@ namespace dotnet_frc
             return files.First();
         }
 
-        private static ProjectRootElement TryOpenProject(ProjectCollection projects, string filename)
+        private static ProjectRootElement? TryOpenProject(ProjectCollection projects, string filename)
         {
             try
             {

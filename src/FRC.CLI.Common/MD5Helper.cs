@@ -7,9 +7,9 @@ namespace FRC.CLI.Common
 {
     public static class MD5Helper
     {
-        public static async Task<string> Md5SumAsync(string fileName)
+        public static async Task<string?> Md5SumAsync(string fileName)
         {
-            byte[] fileMd5Sum = null;
+            byte[]? fileMd5Sum = null;
 
             if (File.Exists(fileName))
             {

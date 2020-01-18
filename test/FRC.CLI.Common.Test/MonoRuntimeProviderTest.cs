@@ -84,7 +84,7 @@ Lets Check Text!
                 {
                     using (var writer = File.Open(tempFile, FileMode.Open))
                     {
-                        var ex = Assert.ThrowsAsync<IOException>(async () =>
+                        var ex = await Assert.ThrowsAsync<IOException>(async () =>
                             await sut.DownloadToFileAsync("", tempFile));
                     }
                     
@@ -126,7 +126,7 @@ Lets Check Text!
                     .Setup(x => x.GetWPILibUserFolderAsync())
                     .ReturnsAsync(tempPath);
                 int count = 0;
-                string str = null;
+                string? str = null;
                 var rpip = mock.Mock<IRemotePackageInstallerProvider>().Object;
                 var exp = mock.Mock<IExceptionThrowerProvider>().Object;
                 var fdp = mock.Mock<IFileDeployerProvider>().Object;

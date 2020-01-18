@@ -12,7 +12,7 @@ namespace dotnet_frc
 {
     public class DotNetNugetVersionDetector
     {
-        public static async Task<string> FindNewestPackageVersion(string package, bool includePrerelease)
+        public static async Task<string?> FindNewestPackageVersion(string package, bool includePrerelease)
         {
             Logger logger = new Logger();
             List<Lazy<INuGetResourceProvider>> providers = new List<Lazy<INuGetResourceProvider>>();
@@ -22,7 +22,7 @@ namespace dotnet_frc
             SourceRepository sourceRepository = new SourceRepository(packageSource, providers);
             PackageMetadataResource packageMetadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>();
             IEnumerable<IPackageSearchMetadata> searchMetadata = await packageMetadataResource.GetMetadataAsync(package, true, true, logger, CancellationToken.None);
-            NuGetVersion newest = null;
+            NuGetVersion? newest = null;
             foreach(var item in searchMetadata)
             {
                 if (item is PackageSearchMetadata itemMetadata)

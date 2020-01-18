@@ -14,6 +14,13 @@ namespace dotnet_frc.Commands
         private CommandOption _ignoreCommand;
         private CommandOption _argumentCommand;
 
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
+        private SettingsCommand()
+#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
+        {
+
+        }
+
         public static DotNetSubCommandBase Create()
         {
             var command = new SettingsCommand
@@ -61,13 +68,10 @@ namespace dotnet_frc.Commands
                 }
 
                 var settingsProvider = scope.Resolve<IFrcSettingsProvider>();
-                FrcSettings currentSettings = await settingsProvider.GetFrcSettingsAsync().ConfigureAwait(false);
+                FrcSettings? currentSettings = await settingsProvider.GetFrcSettingsAsync().ConfigureAwait(false);
                 if (currentSettings == null)
                 {
-                    currentSettings = new FrcSettings();
-                    currentSettings.TeamNumber = "-1";
-                    currentSettings.CommandLineArguments = new List<string>();
-                    currentSettings.DeployIgnoreFiles = new List<string>();
+                    currentSettings = new FrcSettings("-1", new List<string>(), new List<string>());
                 }
 
                 if (_teamOption.HasValue())

@@ -26,7 +26,7 @@ namespace FRC.CLI.Common.Implementations
             m_fileReaderProvider = fileReaderProvider;
         }
 
-        public async Task<FrcSettings> GetFrcSettingsAsync()
+        public async Task<FrcSettings?> GetFrcSettingsAsync()
         {
             bool verbose = m_buildSettingsProvider.Verbose;
             if (verbose)
@@ -35,7 +35,7 @@ namespace FRC.CLI.Common.Implementations
             }
             string projectDirectory = await m_projectInformationProvider.GetProjectRootDirectoryAsync().ConfigureAwait(false);
             string settingsFile = Path.Combine(projectDirectory, SettingsJsonFileName);
-            string json = null;
+            string? json = null;
             try
             {
                 json = await m_fileReaderProvider.ReadFileAsStringAsync(settingsFile).ConfigureAwait(false);

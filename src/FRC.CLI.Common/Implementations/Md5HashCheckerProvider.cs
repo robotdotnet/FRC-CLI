@@ -7,7 +7,7 @@ namespace FRC.CLI.Common.Implementations
     {
         public async Task<bool> VerifyMd5Hash(string file, string hash)
         {
-            string sum = await MD5Helper.Md5SumAsync(file).ConfigureAwait(false);
+            string? sum = await MD5Helper.Md5SumAsync(file).ConfigureAwait(false);
             return sum != null && sum == hash;
         }
     }

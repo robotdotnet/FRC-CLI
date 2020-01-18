@@ -10,7 +10,7 @@ namespace FRC.CLI.Common.Implementations
         private IOutputWriter m_outputWriter;
         private IExceptionThrowerProvider m_exceptionThrowerProvider;
 
-        public HttpMessageHandler MessageHandler { get; set; }
+        public HttpMessageHandler? MessageHandler { get; set; }
 
         public HttpClientFileDownloadProvider(IOutputWriter outputWriter,
             IExceptionThrowerProvider exceptionThrowerProvider)

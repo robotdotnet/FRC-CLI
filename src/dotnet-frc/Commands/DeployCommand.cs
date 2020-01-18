@@ -8,7 +8,9 @@ namespace dotnet_frc
 {
     internal class DeployCommand : FrcSubCommandBase
     {
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
         private CommandOption _debugOption;
+#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 
         public static DotNetSubCommandBase Create()
         {

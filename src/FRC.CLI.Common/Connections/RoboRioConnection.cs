@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -7,7 +8,6 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using FRC.CLI.Base.Enums;
 using FRC.CLI.Base.Interfaces;
-using Nito.AsyncEx;
 using Renci.SshNet;
 using Renci.SshNet.Common;
 
@@ -21,11 +21,11 @@ namespace FRC.CLI.Common.Connections
         public const string RoboRioIpFormatString = "10.{0}.{1}.2";
 
         private ITeamNumberProvider m_teamNumberProvider;
-        private IPAddress m_remoteIp;
+        private IPAddress? m_remoteIp;
         private TimeSpan m_sshTimeout;
 
-        private ConnectionInfo m_adminConnectionInfo;
-        private ConnectionInfo m_lvUserConnectionInfo;
+        private ConnectionInfo? m_adminConnectionInfo;
+        private ConnectionInfo? m_lvUserConnectionInfo;
 
         private SshClient m_sshAdminClient;
         private SshClient m_sshUserClient;
@@ -38,7 +38,9 @@ namespace FRC.CLI.Common.Connections
 
         public bool Connected => m_remoteIp != null;
 
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
         public RoboRioConnection(IOutputWriter outputWriter,
+#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
             IBuildSettingsProvider buildSettingsProvider, IExceptionThrowerProvider exceptionThrowerProvider,
             ITeamNumberProvider teamNumberProvider)
         {
@@ -48,15 +50,6 @@ namespace FRC.CLI.Common.Connections
             m_buildSettingsProvider = buildSettingsProvider;
             m_exceptionThrowerProvider = exceptionThrowerProvider;
             m_remoteIp = null;
-        }
-
-        private void CreateConnection()
-        {
-            if (Connected)
-            {
-                return;
-            }
-            AsyncContext.Run(async () => await CreateConnectionAsync().ConfigureAwait(false));
         }
 
         private async Task CreateConnectionAsync()
@@ -117,7 +110,7 @@ namespace FRC.CLI.Common.Connections
                     else if (finished.IsCompleted && !finished.IsFaulted && !finished.IsCanceled)
                     {
                         // A task finished, find our host
-                        TcpClient foundHost = null;
+                        TcpClient? foundHost = null;
                         if (finished == usb)
                         {
                             foundHost = usbClient;
@@ -280,8 +273,8 @@ namespace FRC.CLI.Common.Connections
         public async Task<bool> DeployFilesAsync(IEnumerable<(string localFile, string remoteLocation)> files, ConnectionUser user)
         {
             await CreateConnectionAsync().ConfigureAwait(false);
-            ScpClient scp;
-            SshClient ssh;
+            ScpClient? scp;
+            SshClient? ssh;
             switch (user)
             {
                 case ConnectionUser.Admin:
@@ -327,7 +320,7 @@ namespace FRC.CLI.Common.Connections
         public async Task<bool> ReceiveFileAsync(string remoteFile, Stream receiveStream, ConnectionUser user)
         {
             await CreateConnectionAsync().ConfigureAwait(false);
-            ScpClient scp;
+            ScpClient? scp;
             switch (user)
             {
                 case ConnectionUser.Admin:
@@ -379,7 +372,7 @@ namespace FRC.CLI.Common.Connections
         public async Task<Dictionary<string, SshCommand>> RunCommandsAsync(IEnumerable<string> commands, ConnectionUser user)
         {
             await CreateConnectionAsync().ConfigureAwait(false);
-            SshClient ssh;
+            SshClient? ssh;
             switch (user)
             {
                 case ConnectionUser.Admin:
@@ -414,7 +407,7 @@ namespace FRC.CLI.Common.Connections
         public async Task<SshCommand> RunCommandAsync(string command, ConnectionUser user)
         {
             await CreateConnectionAsync().ConfigureAwait(false);
-            SshClient ssh;
+            SshClient? ssh;
             switch (user)
             {
                 case ConnectionUser.Admin:
@@ -479,22 +472,16 @@ namespace FRC.CLI.Common.Connections
             // GC.SuppressFinalize(this);
         }
 
-        public async Task<IPAddress> GetConnectionIpAsync()
+        public async Task<IPAddress?> GetConnectionIpAsync()
         {
             await CreateConnectionAsync().ConfigureAwait(false);
-            return m_remoteIp;
-        }
-
-        public IPAddress GetConnectionIp()
-        {
-            CreateConnection();
             return m_remoteIp;
         }
 
         public async Task<bool> DeployStreamAsync(Stream stream, string deployLocation, ConnectionUser user)
         {
             await CreateConnectionAsync().ConfigureAwait(false);
-            ScpClient scp;
+            ScpClient? scp;
             switch (user)
             {
                 case ConnectionUser.Admin:

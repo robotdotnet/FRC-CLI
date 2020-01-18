@@ -120,7 +120,8 @@ namespace FRC.CLI.Common.Implementations
 
             foreach (var file in filtered)
             {
-                string hash = await MD5Helper.Md5SumAsync(file).ConfigureAwait(false);
+                string? hash = await MD5Helper.Md5SumAsync(file).ConfigureAwait(false);
+                if (hash == null) continue;
                 retFiles.Add((file, hash));
             }
 

@@ -11,8 +11,10 @@ namespace dotnet_frc
 {
     internal class UpdateCommand : FrcSubCommandBase
     {
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
         private CommandOption _toolsOption;
         private CommandOption _dependenciesOption;
+#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 
         public static DotNetSubCommandBase Create()
         {

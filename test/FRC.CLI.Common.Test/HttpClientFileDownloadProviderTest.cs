@@ -45,9 +45,9 @@ namespace FRC.CLI.Common.Test
             m_response = response;
         }
 
-        protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            return m_response;
+            return Task.FromResult(m_response);
         }
     }
 

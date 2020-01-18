@@ -68,7 +68,7 @@ namespace FRC.CLI.Common.Implementations
             // Ensure output directory exists
             await m_fileDeployerProvider.RunCommandAsync($"mkdir -p {DeployProperties.DeployDir}", ConnectionUser.LvUser).ConfigureAwait(false);
             // Ignore User specified ignore files, and the wpinative folder
-            List<string> ignoreFiles = (await m_frcSettingsProvider.GetFrcSettingsAsync()
+            List<string>? ignoreFiles = (await m_frcSettingsProvider.GetFrcSettingsAsync()
                 .ConfigureAwait(false))
                 ?.DeployIgnoreFiles;
             if (ignoreFiles == null) {
@@ -78,7 +78,7 @@ namespace FRC.CLI.Common.Implementations
                                                     .Where(f => !DeployProperties.IgnoreFiles.Any(f.Contains) && !ignoreFiles.Any(f.Contains))
                                                     .Select(x =>
                                                     {
-                                                        var path = Path.GetDirectoryName(x);
+                                                        var path = Path.GetDirectoryName(x) ?? x;
                                                         string split = path.Substring(buildDir.Length);
                                                         split = split.Replace('\\', '/');
                                                         return (x, $"{DeployProperties.DeployDir}{split}");
@@ -109,7 +109,7 @@ namespace FRC.CLI.Common.Implementations
             string deployedCmd;
             string deployedCmdFrame;
 
-            string ipAddress = (await m_fileDeployerProvider.GetConnectionIpAsync().ConfigureAwait(false))?.ToString();
+            string? ipAddress = (await m_fileDeployerProvider.GetConnectionIpAsync().ConfigureAwait(false))?.ToString();
 
             if (debug)
             {
@@ -122,7 +122,7 @@ namespace FRC.CLI.Common.Implementations
                 deployedCmdFrame = DeployProperties.RobotCommandFileName;
             }
 
-            List<string> requestedArguments = (await m_frcSettingsProvider.GetFrcSettingsAsync()
+            List<string>? requestedArguments = (await m_frcSettingsProvider.GetFrcSettingsAsync()
                 .ConfigureAwait(false))
                 ?.CommandLineArguments;
             string args = "";

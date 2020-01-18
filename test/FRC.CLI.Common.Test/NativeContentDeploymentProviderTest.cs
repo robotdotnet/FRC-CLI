@@ -218,7 +218,7 @@ C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libwpiuti
             {
                 mock.Mock<IFileDeployerProvider>().Setup(x => x.Dispose());
 
-                IEnumerable<(string, string)> filesToDeploy = null;
+                IEnumerable<(string, string)>? filesToDeploy = null;
                 ConnectionUser conn = (ConnectionUser)5;
 
                 var fProvider = mock.Mock<IFileDeployerProvider>().Setup(x => x.DeployFilesAsync(It.IsAny<IEnumerable<(string, string)>>(),
@@ -227,14 +227,15 @@ C:\Users\redacted\Documents\VSTests\src\Robot451\bin\frctemp\wpinative\libwpiuti
                         conn = u;
                     }).ReturnsAsync(true);
 
-                string command = null;
+                string? command = null;
                 ConnectionUser conn2 = (ConnectionUser)5;
-
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
                 mock.Mock<IFileDeployerProvider>().Setup(x => x.RunCommandAsync(It.IsAny<string>(),
                     It.IsAny<ConnectionUser>())).Callback<string, ConnectionUser>((p, u) => {
                         command = p;
                         conn2 = u;
-                    }).ReturnsAsync((SshCommand)null);
+                    }).ReturnsAsync((SshCommand?)null);
+#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 
                 var m = mock.Mock<IWPILibNativeDeploySettingsProvider>().SetupGet(x => x.NativeDeployLocation).Returns("/usr/local/frc/lib");
 
