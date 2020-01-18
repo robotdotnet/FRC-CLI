@@ -22,9 +22,10 @@
   <PropertyGroup>
     <PackAsTool>true</PackAsTool>
     <PackageOutputPath>./nupkg</PackageOutputPath>
-    <ToolCommandName>dotnet-frc</ToolCommandName>
+    <ToolCommandName>frc</ToolCommandName>
     <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
+    <Version>2020.1.1</Version>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <PackageId>FRC.DotNet.CLI</PackageId>
     <AssemblyTitle>FRC DotNet CLI</AssemblyTitle>
