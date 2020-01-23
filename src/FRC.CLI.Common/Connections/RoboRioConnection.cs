@@ -134,8 +134,7 @@ namespace FRC.CLI.Common.Connections
                         }
 
                         var ep = foundHost.Client.RemoteEndPoint;
-                        var ipEp = ep as IPEndPoint;
-                        if (ipEp == null)
+                        if (!(ep is IPEndPoint ipEp))
                         {
                             // Continue, we cannot use this one
 
@@ -301,18 +300,19 @@ namespace FRC.CLI.Common.Connections
                 await Task.Run(() => ssh.RunCommand($"mkdir -p {dir}").Dispose()).ConfigureAwait(false);
             }
 
-            foreach (var file in fileList)
+            foreach (var (localFile, remoteLocation) in fileList)
             {
-                if (!File.Exists(file.localFile))
+                if (!File.Exists(localFile))
                 {
                     // Determine if we want this to throw or not
                     continue;
                 }
                 if (verbose)
                 {
-                    await m_outputWriter.WriteLineAsync($"Deploying File {file.localFile} to directory {file.remoteLocation}").ConfigureAwait(false);
+                    await m_outputWriter.WriteLineAsync($"Deploying File {localFile} to directory {remoteLocation}").ConfigureAwait(false);
                 }
-                await Task.Run(() => scp.Upload(new FileInfo(file.localFile), Path.Join(file.remoteLocation, Path.GetFileName(file.localFile)))).ConfigureAwait(false);
+                var deployDirectory = Path.Join(remoteLocation, Path.GetFileName(localFile)).Replace('\\', '/');
+                await Task.Run(() => scp.Upload(new FileInfo(localFile), deployDirectory)).ConfigureAwait(false);
             }
             return true;
         }
@@ -320,19 +320,12 @@ namespace FRC.CLI.Common.Connections
         public async Task<bool> ReceiveFileAsync(string remoteFile, Stream receiveStream, ConnectionUser user)
         {
             await CreateConnectionAsync().ConfigureAwait(false);
-            ScpClient? scp;
-            switch (user)
+            var scp = user switch
             {
-                case ConnectionUser.Admin:
-                    scp = m_scpAdminClient;
-                    break;
-                case ConnectionUser.LvUser:
-                    scp = m_scpUserClient;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(user), user, null);
-            }
-
+                ConnectionUser.Admin => m_scpAdminClient,
+                ConnectionUser.LvUser => m_scpUserClient,
+                _ => throw new ArgumentOutOfRangeException(nameof(user), user, null),
+            };
             if (receiveStream == null || !receiveStream.CanWrite)
             {
                 return false;
@@ -372,19 +365,12 @@ namespace FRC.CLI.Common.Connections
         public async Task<Dictionary<string, SshCommand>> RunCommandsAsync(IEnumerable<string> commands, ConnectionUser user)
         {
             await CreateConnectionAsync().ConfigureAwait(false);
-            SshClient? ssh;
-            switch (user)
+            var ssh = user switch
             {
-                case ConnectionUser.Admin:
-                    ssh = m_sshAdminClient;
-                    break;
-                case ConnectionUser.LvUser:
-                    ssh = m_sshUserClient;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(user), user, null);
-            }
-
+                ConnectionUser.Admin => m_sshAdminClient,
+                ConnectionUser.LvUser => m_sshUserClient,
+                _ => throw new ArgumentOutOfRangeException(nameof(user), user, null),
+            };
             Dictionary<string, SshCommand> retCommands = new Dictionary<string, SshCommand>();
 
             bool verbose = m_buildSettingsProvider.Verbose;
@@ -407,21 +393,12 @@ namespace FRC.CLI.Common.Connections
         public async Task<SshCommand> RunCommandAsync(string command, ConnectionUser user)
         {
             await CreateConnectionAsync().ConfigureAwait(false);
-            SshClient? ssh;
-            switch (user)
+            var ssh = user switch
             {
-                case ConnectionUser.Admin:
-                    ssh = m_sshAdminClient;
-                    break;
-                case ConnectionUser.LvUser:
-                    ssh = m_sshUserClient;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(user), user, null);
-            }
-
-            Dictionary<string, SshCommand> retCommands = new Dictionary<string, SshCommand>();
-
+                ConnectionUser.Admin => m_sshAdminClient,
+                ConnectionUser.LvUser => m_sshUserClient,
+                _ => throw new ArgumentOutOfRangeException(nameof(user), user, null),
+            };
             bool verbose = m_buildSettingsProvider.Verbose;
             if (verbose)
             {
@@ -481,19 +458,12 @@ namespace FRC.CLI.Common.Connections
         public async Task<bool> DeployStreamAsync(Stream stream, string deployLocation, ConnectionUser user)
         {
             await CreateConnectionAsync().ConfigureAwait(false);
-            ScpClient? scp;
-            switch (user)
+            var scp = user switch
             {
-                case ConnectionUser.Admin:
-                    scp = m_scpAdminClient;
-                    break;
-                case ConnectionUser.LvUser:
-                    scp = m_scpUserClient;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(user), user, null);
-            }
-
+                ConnectionUser.Admin => m_scpAdminClient,
+                ConnectionUser.LvUser => m_scpUserClient,
+                _ => throw new ArgumentOutOfRangeException(nameof(user), user, null),
+            };
             bool verbose = m_buildSettingsProvider.Verbose;
             if (verbose)
             {

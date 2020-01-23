@@ -72,20 +72,18 @@ namespace FRC.CLI.Common.Implementations
                 throw m_exceptionThrowerProvider.ThrowException("Failed to find all files to deploy");
             }
 
-            MemoryStream memStream = new MemoryStream();
-            bool readFile = await m_fileDeployerProvider.ReceiveFileAsync(
-                $"{m_wpilibNativeDeploySettingsProvider.NativeDeployLocation}/{m_wpilibNativeDeploySettingsProvider.NativePropertiesFileName}",
-                memStream, ConnectionUser.Admin).ConfigureAwait(false);
-            if (!readFile)
-            {
-                // TODO: Add Verbose
-                await DeployNativeLibrariesAsync(fileMd5List).ConfigureAwait(false);
-                await m_outputWriter.WriteLineAsync("Successfully deployed native files").ConfigureAwait(false);
-                return;
-            }
+            // Compute local checksums
+            var hashCheckFile = fileMd5List.Select(x => $"{x.hash}  {Path.GetFileName(x.file)}").Aggregate((x,y) => $"{x}\n{y}");
 
-            memStream.Position = 0;
-            var updateList = GetFilesToUpdate(memStream, fileMd5List).ToList();
+            var sumCheckResult = await m_fileDeployerProvider.RunCommandAsync($"pushd {m_wpilibNativeDeploySettingsProvider.NativeDeployLocation} > /dev/null && echo '{hashCheckFile}' > _tmp.et.md5 && md5sum -c _tmp.et.md5 2> /dev/null; popd > /dev/null", ConnectionUser.Admin);
+
+            var upToDate = sumCheckResult.Result.Split('\n')
+                .Select(x => x.Split(':'))
+                .Where(x => x.Last().AsSpan().Trim().Equals("ok", StringComparison.InvariantCultureIgnoreCase))
+                .Select(x=> x.First())
+                .ToArray();
+
+            var updateList = fileMd5List.Where(x => !upToDate.Contains(Path.GetFileName(x.file))).ToList();
 
             if (updateList.Count == 0)
             {

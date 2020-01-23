@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -23,12 +24,7 @@ namespace FRC.CLI.Common
                 return null;
             }
 
-            StringBuilder builder = new StringBuilder();
-            foreach (var b in fileMd5Sum)
-            {
-                builder.Append(b);
-            }
-            return builder.ToString();
+            return BitConverter.ToString(fileMd5Sum).Replace("-", "").ToLower();
         }
     }
 }
