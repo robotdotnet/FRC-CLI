@@ -9,7 +9,7 @@ namespace FRC.CLI.Common.Implementations
     {
         public Task<string> ReadFileAsStringAsync(string file)
         {
-            return Task.Run(() => File.ReadAllText(file));
+            return File.ReadAllTextAsync(file);
         }
     }
 }

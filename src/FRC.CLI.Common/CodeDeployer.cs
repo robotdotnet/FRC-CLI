@@ -34,9 +34,9 @@ namespace FRC.CLI.Common
             await m_codeBuilderProvider.BuildCodeAsync().ConfigureAwait(false);
 
             // Check image
-            await m_roboRioImageProvider.CheckCorrectImageAsync().ConfigureAwait(false);
+            //await m_roboRioImageProvider.CheckCorrectImageAsync().ConfigureAwait(false);
 
-            await m_roboRioDependencyCheckerProvider.CheckIfDependenciesAreSatisfiedAsync().ConfigureAwait(false);
+            //await m_roboRioDependencyCheckerProvider.CheckIfDependenciesAreSatisfiedAsync().ConfigureAwait(false);
 
             await m_nativePackageDeploymentProvider.DeployNativeContentAsync().ConfigureAwait(false);
 

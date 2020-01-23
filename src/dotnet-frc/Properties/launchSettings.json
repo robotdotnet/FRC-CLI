@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "dotnet-frc": {
+      "commandName": "Project",
+      "commandLineArgs": "deploy --project=C:\\Users\\thad.house\\GitHub\\RobotDotNet\\WPILib\\dev\\roboRIODev"
+    }
+  }
+}

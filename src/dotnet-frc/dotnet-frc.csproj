@@ -3,6 +3,7 @@
     <PackageReference Include="autofac">
       <Version>4.9.4</Version>
     </PackageReference>
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20071.2" />
     <ProjectReference Include="..\FRC.CLI.Base\FRC.CLI.Base.csproj">
       <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
@@ -40,5 +41,6 @@
     <PackageLicenseUrl>https://github.com/robotdotnet/FRC-CLI/blob/master/LICENSE.txt</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>git://github.com/robotdotnet/FRC-CLI</RepositoryUrl>
+    <RootNamespace>dotnet_frc</RootNamespace>
   </PropertyGroup>
 </Project>

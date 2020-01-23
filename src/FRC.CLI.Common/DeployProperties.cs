@@ -7,7 +7,7 @@ namespace FRC.CLI.Common
         public const string DeployKillCommand =
             ". /etc/profile.d/natinst-path.sh; /usr/local/frc/bin/frcKillRobot.sh -t -r;";
 
-        public const string UserLibraryDir = "/usr/local/frc/lib";
+        public const string UserLibraryDir = "/usr/local/frc/third-party/lib";
 
         public const string KillOnlyCommand = ". /etc/profile.d/natinst-path.sh; /usr/local/frc/bin/frcKillRobot.sh -t";
 
@@ -23,12 +23,6 @@ namespace FRC.CLI.Common
 
         public static readonly string[] IgnoreFiles =
         {
-            ".vshost",
-            ".config",
-            ".manifest",
-            "FRC.NetworkTables.Core.DesktopLibraries.dll",
-            "FRC.OpenCvSharp.DesktopLibraries.dll",
-            "FRC.HAL.DesktopLibraries.dll"
         };
 
         public const string CommandDir = "/home/lvuser";

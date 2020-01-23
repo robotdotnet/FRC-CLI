@@ -17,7 +17,7 @@ namespace FRC.CLI.Common.Implementations
         private readonly IFileDeployerProvider m_fileDeployerProvider;
         private readonly IOutputWriter m_outputWriter;
 
-        public const string NativeDirectoryFolder = "wpinative";
+        public const string NativeDirectoryFolder = "athena";
 
         public string NativeDirectory => NativeDirectoryFolder;
 

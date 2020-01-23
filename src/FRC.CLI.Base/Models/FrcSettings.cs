@@ -5,12 +5,15 @@ namespace FRC.CLI.Base.Models
 {
     public class FrcSettings
     {
-        public string TeamNumber { get; set; }
+        [JsonProperty("teamNumber")]
+        public int TeamNumber { get; set; }
+        [JsonProperty("commandLineArguments")]
         public List<string> CommandLineArguments { get; }
+        [JsonProperty("deployIgnoreFile")]
         public List<string> DeployIgnoreFiles { get; }
 
         [JsonConstructor]
-        public FrcSettings(string teamNumber, List<string> commandLineArguments, List<string> deployIgnoreFiles)
+        public FrcSettings(int teamNumber, List<string> commandLineArguments, List<string> deployIgnoreFiles)
         {
             this.TeamNumber = teamNumber;
             this.CommandLineArguments = commandLineArguments;

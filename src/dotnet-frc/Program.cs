@@ -1,5 +1,7 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.DotNet.Cli.Utils;
+using System.CommandLine;
+using System.CommandLine.Invocation;
+//using Microsoft.DotNet.Cli.Utils;
 
 
 namespace dotnet_frc
@@ -8,7 +10,8 @@ namespace dotnet_frc
     {
         private static Task<int> Main(string[] args)
         {
-            DebugHelper.HandleDebugSwitch(ref args);
+            
+            //DebugHelper.HandleDebugSwitch(ref args);
             return FrcCommand.RunAsync(args);
         }
     }

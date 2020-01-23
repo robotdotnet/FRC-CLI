@@ -84,7 +84,7 @@ namespace FRC.CLI.Common.Test
             var sut = mock.Create<JsonFrcSettingsProvider>();
             var actual = await sut.GetFrcSettingsAsync().ConfigureAwait(false);
             Assert.NotNull(actual);
-            Assert.Equal("9999", actual!.TeamNumber);
+            Assert.Equal(9999, actual!.TeamNumber);
             Assert.True(actual.CommandLineArguments.Count == 0);
             Assert.True(actual.DeployIgnoreFiles.Count == 0);
         }

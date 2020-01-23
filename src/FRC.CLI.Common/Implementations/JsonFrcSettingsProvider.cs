@@ -8,7 +8,7 @@ namespace FRC.CLI.Common.Implementations
 {
     public class JsonFrcSettingsProvider : IFrcSettingsProvider
     {
-        public const string SettingsJsonFileName = "frcsettings.json";
+        public static readonly string SettingsJsonFileName = Path.Join(".wpilib", "wpilib_preferences.json");
         private readonly IExceptionThrowerProvider m_exceptionThrowerProvider;
         private readonly IOutputWriter m_outputWriter;
         private readonly IProjectInformationProvider m_projectInformationProvider;
@@ -84,7 +84,8 @@ namespace FRC.CLI.Common.Implementations
             }
             string projectDirectory = await m_projectInformationProvider.GetProjectRootDirectoryAsync().ConfigureAwait(false);
             string settingsFile = Path.Combine(projectDirectory, SettingsJsonFileName);
-            await Task.Run(() => File.WriteAllText(settingsFile, serialized)).ConfigureAwait(false);
+            Directory.CreateDirectory(Path.GetDirectoryName(settingsFile));
+            await File.WriteAllTextAsync(settingsFile, serialized);
         }
     }
 }

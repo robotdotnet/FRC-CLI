@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using FRC.CLI.Base.Interfaces;
-using Microsoft.DotNet.Cli.CommandLine;
 
 namespace dotnet_frc
 {
@@ -40,26 +39,14 @@ namespace dotnet_frc
                 {
                     throw m_exceptionThrowerProvider.ThrowException("Could not find team number. Please either use a -t argument, \nor run dotnet frc settings to set a permanent team number");
                 }
-                if (!int.TryParse(frcSettings.TeamNumber, out teamNumber))
-                {
-                    throw m_exceptionThrowerProvider.ThrowException("Cannot parse team number from settings file");
-                } 
+                teamNumber = frcSettings.TeamNumber;
             }
             return teamNumber;
         }
 
-        internal static int? GetTeamNumberFromCommandOption(CommandOption option)
+        internal static int? GetTeamNumberFromCommandOption(int valTeamNumber)
         {
-            int? valTeamNumber = null;
-            if (option.HasValue())
-            {
-                int temp = 0;
-                if (int.TryParse(option.Value(), out temp))
-                {
-                    valTeamNumber = temp;
-                }
-            }
-            return valTeamNumber;
+            return valTeamNumber < 0 ? null : (int?)valTeamNumber;
         }
     }
 }

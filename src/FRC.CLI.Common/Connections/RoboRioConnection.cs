@@ -82,10 +82,10 @@ namespace FRC.CLI.Common.Connections
                 await m_outputWriter.WriteLineAsync($"    {roboRIOIP}").ConfigureAwait(false);
             }
 
-            using (TcpClient usbClient = new TcpClient())
-            using (TcpClient mDnsClient = new TcpClient())
-            using (TcpClient lanClient = new TcpClient())
-            using (TcpClient ipClient = new TcpClient())
+            using (TcpClient usbClient = new TcpClient(AddressFamily.InterNetwork))
+            using (TcpClient mDnsClient = new TcpClient(AddressFamily.InterNetwork))
+            using (TcpClient lanClient = new TcpClient(AddressFamily.InterNetwork))
+            using (TcpClient ipClient = new TcpClient(AddressFamily.InterNetwork))
             {
                 Task usb = usbClient.ConnectAsync(RoboRioUSBIp, 80);
                 Task mDns = mDnsClient.ConnectAsync(roboRioMDNS, 80);
@@ -312,7 +312,7 @@ namespace FRC.CLI.Common.Connections
                 {
                     await m_outputWriter.WriteLineAsync($"Deploying File {file.localFile} to directory {file.remoteLocation}").ConfigureAwait(false);
                 }
-                await Task.Run(() => scp.Upload(new FileInfo(file.localFile), file.remoteLocation)).ConfigureAwait(false);
+                await Task.Run(() => scp.Upload(new FileInfo(file.localFile), Path.Join(file.remoteLocation, Path.GetFileName(file.localFile)))).ConfigureAwait(false);
             }
             return true;
         }
