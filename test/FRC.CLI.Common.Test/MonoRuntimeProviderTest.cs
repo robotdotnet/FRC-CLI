@@ -146,7 +146,7 @@ await sut.DownloadToFileAsync("", tempFile));
             sut.Verify(x => x.InstallRuntimeAsync(It.IsAny<string>()), Times.Once);
             Assert.Equal(1, count);
             Assert.NotNull(str);
-            Assert.Equal(Path.Combine(tempPath, "mono", DeployProperties.MonoVersion), str);
+            Assert.Equal(Path.Combine(tempPath, "mono", DeployProperties.MonoZipName), str);
         }
     }
 }

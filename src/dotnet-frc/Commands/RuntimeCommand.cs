@@ -57,47 +57,77 @@ namespace dotnet_frc.Commands
 
         public async Task<int> HandleCommand(int team, string? project, bool download, bool install, string? location)
         {
-            ;
+            var msBuild = ResolveProject(project);
+            if (msBuild == null)
+            {
+
+                return -1;
+            }
+            var builder = new ContainerBuilder();
+            AutoFacUtilites.AddCommonServicesToContainer(builder, msBuild, team, false,
+                false);
+            var container = builder.Build();
+
+            using (var scope = container.BeginLifetimeScope())
+            {
+                var runtimeProvider = scope.Resolve<IRuntimeProvider>();
+                if (download)
+                {
+                    await runtimeProvider.DownladRuntimeAsync();
+                }
+
+                if (install)
+                {
+                    if (location != null)
+                    {
+                        await runtimeProvider.InstallRuntimeAsync(location);
+                    }
+                    else
+                    {
+                        await runtimeProvider.InstallRuntimeAsync();
+                    }
+                }
+            }
+
             return 0;
-            ;
         }
 
-//        private CommandOption _downloadOption;
-//        private CommandOption _installOption;
-//        private CommandOption _locationOption;
-//#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
+        //        private CommandOption _downloadOption;
+        //        private CommandOption _installOption;
+        //        private CommandOption _locationOption;
+        //#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 
-//        public static DotNetSubCommandBase Create()
-//        {
-//            var command = new RuntimeCommand
-//            {
-//                Name = "runtime",
-//                Description = "Installs the runtime on the robot",
-//                HandleRemainingArguments = false
-//            };
+        //        public static DotNetSubCommandBase Create()
+        //        {
+        //            var command = new RuntimeCommand
+        //            {
+        //                Name = "runtime",
+        //                Description = "Installs the runtime on the robot",
+        //                HandleRemainingArguments = false
+        //            };
 
-//            SetupBaseOptions(command);
+        //            SetupBaseOptions(command);
 
-//            command._downloadOption = command.Option(
-//                "-d|--download",
-//                "Download the runtime",
-//                CommandOptionType.NoValue
-//            );
+        //            command._downloadOption = command.Option(
+        //                "-d|--download",
+        //                "Download the runtime",
+        //                CommandOptionType.NoValue
+        //            );
 
-//            command._installOption = command.Option(
-//                "-i|--install",
-//                "Install the runtime",
-//                CommandOptionType.NoValue
-//            );
+        //            command._installOption = command.Option(
+        //                "-i|--install",
+        //                "Install the runtime",
+        //                CommandOptionType.NoValue
+        //            );
 
-//            command._locationOption = command.Option(
-//                "-l|--location",
-//                "Local runtime location",
-//                CommandOptionType.SingleValue
-//            );
+        //            command._locationOption = command.Option(
+        //                "-l|--location",
+        //                "Local runtime location",
+        //                CommandOptionType.SingleValue
+        //            );
 
-//            return command;
-//        }
+        //            return command;
+        //        }
 
         //public override async Task<int> RunAsync(string fileOrDirectory)
         //{

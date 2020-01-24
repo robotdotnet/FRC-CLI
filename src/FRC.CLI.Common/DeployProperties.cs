@@ -32,14 +32,14 @@ namespace FRC.CLI.Common
             //--debugger-agent=transport=dt_socket,server=y,address=127.0.0.1:55555
         public const string RobotCommandDebugFileName = "robotDebugCommand";
 
-        public const string RobotCommand = "env LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/frc/lib mono \"" + DeployDir + "/{0}\"";
+        public const string RobotCommand = "env MONO_THREADS_SUSPEND=coop mono \"" + DeployDir + "/{0}\"";
 
         public const string RobotCommandFileName = "robotCommand";
 
-        public const string MonoMd5 = "1852022171552091945152452461853193134197150";
+        public const string MonoMd5 = "769F3315B11F2A78A33EAFDC50FB2410";
 
-        public const string MonoVersion = "Mono4.2.1.zip";
+        public const string MonoZipName = "Mono6.8.0.96-2020-0.zip";
 
-        public const string MonoUrl = "https://dl.bintray.com/robotdotnet/Mono/";
+        public const string MonoUrl = "https://github.com/robotdotnet/Mono-Releases/releases/download/v6.8.0.96-2020-0/Mono6.8.0.96-2020-0.zip";
     }
 }

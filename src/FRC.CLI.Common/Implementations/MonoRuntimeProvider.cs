@@ -15,7 +15,7 @@ namespace FRC.CLI.Common.Implementations
         private readonly IMd5HashCheckerProvider m_md5HashCheckerProvider;
         private readonly IOutputWriter m_outputWriter;
 
-        public string MonoVersion = DeployProperties.MonoVersion;
+        public string MonoZipName = DeployProperties.MonoZipName;
         public string MonoUrl = DeployProperties.MonoUrl;
 
         public string MonoMd5 = DeployProperties.MonoMd5;
@@ -48,7 +48,7 @@ url, writeStream).ConfigureAwait(false);
         {
             await m_outputWriter.WriteLineAsync("Downloading Mono Runtime").ConfigureAwait(false);
             string monoFolder = await GetMonoFolderAsync().ConfigureAwait(false);
-            string monoFilePath = Path.Combine(monoFolder, MonoVersion);
+            string monoFilePath = Path.Combine(monoFolder, MonoZipName);
             if (await m_md5HashCheckerProvider.VerifyMd5Hash(monoFilePath, MonoMd5).ConfigureAwait(false))
             {
                 // File already exists and is correct. No need to redownload
@@ -56,8 +56,8 @@ url, writeStream).ConfigureAwait(false);
                 return;
             }
             Directory.CreateDirectory(monoFolder);
-            string file = Path.Combine(monoFolder, MonoVersion);
-            await DownloadToFileAsync(MonoUrl + MonoVersion, file).ConfigureAwait(false);
+            string file = Path.Combine(monoFolder, MonoZipName);
+            await DownloadToFileAsync(MonoUrl, file).ConfigureAwait(false);
             if (!await m_md5HashCheckerProvider.VerifyMd5Hash(monoFilePath, MonoMd5).ConfigureAwait(false))
             {
                 throw m_exceptionThrowerProvider.ThrowException("Mono file not downloaded successfully");
@@ -74,7 +74,7 @@ url, writeStream).ConfigureAwait(false);
         public async System.Threading.Tasks.Task InstallRuntimeAsync()
         {
             string monoFolder = await GetMonoFolderAsync().ConfigureAwait(false);
-            string monoFilePath = Path.Combine(monoFolder, MonoVersion);
+            string monoFilePath = Path.Combine(monoFolder, MonoZipName);
             await InstallRuntimeAsync(monoFilePath).ConfigureAwait(false);
         }
 
