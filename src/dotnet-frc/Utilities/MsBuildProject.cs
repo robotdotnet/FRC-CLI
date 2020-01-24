@@ -137,10 +137,10 @@ namespace dotnet_frc
             {
                 if (item.Name == "AssemblyName")
                 {
-                    return item.Value + ".dll";
+                    return item.Value + ".exe";
                 }
             }
-            return Path.GetFileNameWithoutExtension(ProjectFile) + ".dll";
+            return Path.GetFileNameWithoutExtension(ProjectFile) + ".exe";
         }
 
         public MsBuildProject? GetPropsFile()
