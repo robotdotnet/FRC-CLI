@@ -17,7 +17,6 @@ steps:
   displayName: 'dotnet build $(buildConfiguration)'
 - script: dotnet test --configuration $(buildConfiguration)
   displayName: 'dotnet test $(buildConfiguration)'
-steps:
 - publish: $(System.DefaultWorkingDirectory)/src/dotnet-frc/nupkg
   artifact: ToolNuPkg
 
