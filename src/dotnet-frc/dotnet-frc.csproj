@@ -21,6 +21,7 @@
     </PackageReference>
   </ItemGroup>
   <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackAsTool>true</PackAsTool>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <ToolCommandName>frc</ToolCommandName>
